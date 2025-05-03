@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     }
 
     const supportsToolCalling = selectedModel.toolCallType === 'native'
-
+    console.log('supportsToolCalling', supportsToolCalling)
     return supportsToolCalling
       ? createToolCallingStreamResponse({
           messages,

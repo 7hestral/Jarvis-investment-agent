@@ -43,6 +43,8 @@ export function createToolCallingStreamResponse(config: BaseStreamConfig) {
           searchMode
         })
 
+        console.log('researcherConfig', researcherConfig)
+
         const result = streamText({
           ...researcherConfig,
           onFinish: async result => {
