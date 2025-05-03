@@ -46,6 +46,7 @@ export function researcher({
   model: string
   searchMode: boolean
 }): ResearcherReturn {
+  console.log('searchMode', searchMode)
   try {
     const currentDate = new Date().toLocaleString()
 
