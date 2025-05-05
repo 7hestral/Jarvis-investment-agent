@@ -3,7 +3,7 @@
 import { useLogin } from '@privy-io/react-auth'
 import { useRouter } from 'next/navigation'
 import { Button } from './ui/button'
-export function Login() {
+export function LoginButton() {
   const router = useRouter()
   const { login } = useLogin({
     onComplete: () => router.push('/search')
