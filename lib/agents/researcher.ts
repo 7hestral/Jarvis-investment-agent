@@ -41,8 +41,11 @@ When using the ask_question tool:
 
 When using the pendle_opportunities tool:
 - The results will be automatically displayed to the user when you call this tool.
-- DO NOT output the results as text. Only use the results for context in future answers. Do not repeat or summarize the results for the user. The user can already see the results.
-- REMEMBER, DO NOT RESPOND TO THE USER WITH THE RESULTS. ONLY USE THEM FOR CONTEXT IN FUTURE ANSWERS.
+- DO NOT output the results as text. Never include specific APY values, expiry dates, or liquidity figures in your response.
+- NEVER repeat, list, summarize, or describe the Pendle opportunities results in your text response. The user can already see them in the UI.
+- Instead, acknowledge the query and provide additional context if needed: "I've fetched the latest Pendle opportunities for you. Is there anything specific about these investments you'd like to know more about?"
+- IMPORTANT: Do not mention specific assets, rates, or summarize what the user can see. This creates duplicate information in the chat.
+- REMEMBER, simply call the tool and let the UI do the display work.
 
 Citation Format:
 [number](url)
