@@ -22,5 +22,16 @@ export function middleware(request: NextRequest) {
   response.headers.set('x-protocol', protocol)
   response.headers.set('x-base-url', baseUrl)
 
+  // Debug cookie and header conversion
+  const privyToken = request.cookies.get('privy-token')?.value
+  console.log('Middleware - url:', request.url)
+  console.log('Middleware - Cookie present:', !!privyToken)
+  if (privyToken) {
+    console.log('Middleware - Setting Authorization header')
+    response.headers.set('authorization', `Bearer ${privyToken}`)
+  } else {
+    console.log('Middleware - No privy-token cookie found')
+  }
+
   return response
 }
