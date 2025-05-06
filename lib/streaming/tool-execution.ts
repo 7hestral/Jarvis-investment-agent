@@ -7,6 +7,7 @@ import {
 } from 'ai'
 import { z } from 'zod'
 import { searchSchema } from '../schema/search'
+import { pendleOpportunitiesTool } from '../tools/pendle'
 import { search } from '../tools/search'
 import { ExtendedCoreMessage } from '../types'
 import { getModel } from '../utils/registry'
@@ -28,7 +29,7 @@ export async function executeToolCall(
     return { toolCallDataAnnotation: null, toolCallMessages: [] }
   }
 
-  // Convert Zod schema to string representation
+  // Convert Zod schema to string representation for both tools
   const searchSchemaString = Object.entries(searchSchema.shape)
     .map(([key, value]) => {
       const description = value.description
@@ -36,13 +37,22 @@ export async function executeToolCall(
       return `- ${key}${isOptional ? ' (optional)' : ''}: ${description}`
     })
     .join('\n')
+
+  const pendleSchemaString = Object.entries(pendleOpportunitiesTool.parameters.shape)
+    .map(([key, value]) => {
+      const description = value.description
+      const isOptional = value instanceof z.ZodOptional
+      return `- ${key}${isOptional ? ' (optional)' : ''}: ${description}`
+    })
+    .join('\n')
+
   const defaultMaxResults = model?.includes('ollama') ? 5 : 20
 
   // Generate tool selection using XML format
   const toolSelectionResponse = await generateText({
     model: getModel(model),
     system: `You are an intelligent assistant that analyzes conversations to select the most appropriate tools and their parameters.
-            You excel at understanding context to determine when and how to use available tools, including crafting effective search queries.
+            You excel at understanding context to determine when and how to use available tools, including crafting effective search queries when needed.
             Current date: ${new Date().toISOString().split('T')[0]}
 
             Do not include any other text in your response.
@@ -50,27 +60,40 @@ export async function executeToolCall(
             <tool_call>
               <tool>tool_name</tool>
               <parameters>
-                <query>search query text</query>
-                <max_results>number - ${defaultMaxResults} by default</max_results>
-                <search_depth>basic or advanced</search_depth>
-                <include_domains>domain1,domain2</include_domains>
-                <exclude_domains>domain1,domain2</exclude_domains>
+                ...tool parameters...
               </parameters>
             </tool_call>
 
-            Available tools: search
+            Available tools:
+            - pendle_opportunities: Use when the user asks about Pendle yield opportunities farming on Ethereum. This tool returns a list of current Pendle opportunities with APY and liquidity information.
+            - search: Use for general web search queries. ONLY USE IF YOU ARE UNAWARE OF THE INFORMATION OR THE OTHER TOOLS ARE NOT APPROPRIATE.
+            
 
             Search parameters:
             ${searchSchemaString}
+
+            Pendle opportunities parameters:
+            ${pendleSchemaString}
 
             If you don't need a tool, respond with <tool_call><tool></tool></tool_call>`,
     messages: coreMessages
   })
 
-  // Parse the tool selection XML using the search schema
-  const toolCall = parseToolCallXml(toolSelectionResponse.text, searchSchema)
+  // Determine which tool is being called
+  let toolCall, toolName, toolParams
+  // Try parsing as search tool
+  toolCall = parseToolCallXml(toolSelectionResponse.text, searchSchema)
+  toolName = toolCall.tool
+  toolParams = toolCall.parameters
 
-  if (!toolCall || toolCall.tool === '') {
+  // If not search, try pendle tool
+  if (!toolName || toolName === '') {
+    toolCall = parseToolCallXml(toolSelectionResponse.text, pendleOpportunitiesTool.parameters)
+    toolName = toolCall.tool
+    toolParams = toolCall.parameters
+  }
+
+  if (!toolCall || toolName === '') {
     return { toolCallDataAnnotation: null, toolCallMessages: [] }
   }
 
@@ -79,26 +102,54 @@ export async function executeToolCall(
     data: {
       state: 'call',
       toolCallId: `call_${generateId()}`,
-      toolName: toolCall.tool,
-      args: JSON.stringify(toolCall.parameters)
+      toolName: toolName,
+      args: JSON.stringify(toolParams)
     }
   }
   dataStream.writeData(toolCallAnnotation)
 
-  // Support for search tool only for now
-  const searchResults = await search(
-    toolCall.parameters?.query ?? '',
-    toolCall.parameters?.max_results,
-    toolCall.parameters?.search_depth as 'basic' | 'advanced',
-    toolCall.parameters?.include_domains ?? [],
-    toolCall.parameters?.exclude_domains ?? []
-  )
+  let toolResults
+  if (toolName === 'search') {
+    // Type guard for search tool
+    if (
+      toolParams &&
+      typeof toolParams === 'object' &&
+      'query' in toolParams
+    ) {
+      toolResults = await search(
+        toolParams.query ?? '',
+        toolParams.max_results,
+        toolParams.search_depth as 'basic' | 'advanced',
+        toolParams.include_domains ?? [],
+        toolParams.exclude_domains ?? []
+      )
+    } else {
+      toolResults = null
+    }
+  } else if (toolName === 'pendle_opportunities') {
+    // Type guard for pendle tool: must NOT have 'query', but have at least one of the pendle params
+    if (
+      toolParams &&
+      typeof toolParams === 'object' &&
+      !('query' in toolParams) &&
+      ('max_results' in toolParams || 'apy_gte' in toolParams || 'apy_lte' in toolParams)
+    ) {
+      toolResults = await pendleOpportunitiesTool.execute(
+        toolParams as { max_results: number; apy_gte?: number; apy_lte?: number },
+        { toolCallId: 'pendle_opportunities', messages: [] }
+      )
+    } else {
+      toolResults = null
+    }
+  } else {
+    toolResults = null
+  }
 
   const updatedToolCallAnnotation = {
     ...toolCallAnnotation,
     data: {
       ...toolCallAnnotation.data,
-      result: JSON.stringify(searchResults),
+      result: JSON.stringify(toolResults),
       state: 'result'
     }
   }
@@ -112,16 +163,39 @@ export async function executeToolCall(
     } as JSONValue
   }
 
-  const toolCallMessages: CoreMessage[] = [
-    {
-      role: 'assistant',
-      content: `Tool call result: ${JSON.stringify(searchResults)}`
-    },
-    {
-      role: 'user',
-      content: 'Now answer the user question.'
-    }
-  ]
+  let toolCallMessages: CoreMessage[] = []
+
+  if (toolName === 'pendle_opportunities') {
+    // Do NOT output the tool result as a text message
+    toolCallMessages = [
+      {
+        role: 'assistant',
+        content: `Tool call result: ${JSON.stringify(toolResults)}`
+      },
+      {
+        role: 'user',
+        content: 'Thanks for the information.'
+      }
+    ]
+  } else if (toolName === 'search') {
+    toolCallMessages = [
+      {
+        role: 'assistant',
+        content: `Tool call result: ${JSON.stringify(toolResults)}`
+      },
+      {
+        role: 'user',
+        content: 'Now answer the user question.'
+      }
+    ]
+  }
+
+  if (toolName === 'pendle_opportunities') {
+    // Do NOT stream the annotation
+    // (do NOT call dataStream.writeMessageAnnotation(...))
+    // But DO add the tool result to the LLM context for the next turn
+    return { toolCallDataAnnotation: null, toolCallMessages }
+  }
 
   return { toolCallDataAnnotation, toolCallMessages }
 }
