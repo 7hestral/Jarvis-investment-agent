@@ -1,7 +1,9 @@
 import { Chat } from '@/components/chat'
 import { getChat } from '@/lib/actions/chat'
 import { getModels } from '@/lib/config/models'
+import { privy } from '@/lib/privy/verify-access-token'
 import { convertToUIMessages } from '@/lib/utils'
+import { headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 
 export const maxDuration = 60
@@ -19,7 +21,23 @@ export async function generateMetadata(props: {
 export default async function SearchPage(props: {
   params: Promise<{ id: string }>
 }) {
-  const userId = 'anonymous'
+  const headersList = await headers()
+  // console.log('All headers:', Object.fromEntries(headersList.entries()))
+
+  const authToken = headersList.get('authorization')?.replace(/^Bearer /, '')
+  
+  let userId = 'anonymous'
+  if (authToken) {
+    try {
+      const claims = await privy.verifyAuthToken(authToken)
+      userId = claims.userId
+    } catch (error) {
+      console.error('Failed to verify auth token:', error)
+    }
+  } else {
+    console.log('No auth token found in headers')
+  }
+
   const { id } = await props.params
 
   const chat = await getChat(id, userId)
@@ -27,10 +45,12 @@ export default async function SearchPage(props: {
   const messages = convertToUIMessages(chat?.messages || [])
 
   if (!chat) {
+    console.log('No chat found')
     redirect('/')
   }
 
   if (chat?.userId !== userId) {
+    console.log('Chat user ID does not match user ID')
     notFound()
   }
 

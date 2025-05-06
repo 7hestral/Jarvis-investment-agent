@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     const { messages, id: chatId } = await req.json()
     const referer = req.headers.get('referer')
     const isSharePage = referer?.includes('/share/')
+    const userId = req.headers.get('x-user-id') || 'anonymous'
 
     if (isSharePage) {
       return new Response('Chat API is not available on share pages', {
@@ -62,13 +63,15 @@ export async function POST(req: Request) {
           messages,
           model: selectedModel,
           chatId,
-          searchMode
+          searchMode,
+          userId
         })
       : createManualToolStreamResponse({
           messages,
           model: selectedModel,
           chatId,
-          searchMode
+          searchMode,
+          userId
         })
   } catch (error) {
     console.error('API route error:', error)

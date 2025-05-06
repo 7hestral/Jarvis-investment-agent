@@ -110,6 +110,7 @@ export async function clearChats(
 }
 
 export async function saveChat(chat: Chat, userId: string = 'anonymous') {
+  console.log(`Save chat for ${userId}`)
   try {
     const redis = await getRedis()
     const pipeline = redis.pipeline()

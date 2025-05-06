@@ -5,9 +5,10 @@ import { useAutoScroll } from '@/lib/hooks/use-auto-scroll'
 import { Model } from '@/lib/types/models'
 import { cn } from '@/lib/utils'
 import { useChat } from '@ai-sdk/react'
+import { getAccessToken, usePrivy } from '@privy-io/react-auth'
 import { ChatRequestOptions } from 'ai'
 import { Message } from 'ai/react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
@@ -24,6 +25,35 @@ export function Chat({
   models?: Model[]
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const { user, ready, authenticated } = usePrivy()
+  const [headers, setHeaders] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    if (!ready) return
+    if (!authenticated) {
+      setHeaders({
+        'x-user-id': 'anonymous',
+        Authorization: ''
+      })
+      return
+    } else {
+      ;(async () => {
+        try {
+          const token = await getAccessToken()
+          setHeaders({
+            'x-user-id': user?.id || 'anonymous',
+            Authorization: `Bearer ${token}`
+          })
+        } catch (error) {
+          console.error('Failed to get access token:', error)
+          setHeaders({
+            'x-user-id': user?.id || 'anonymous',
+            Authorization: ''
+          })
+        }
+      })()
+    }
+  }, [user?.id, ready, authenticated])
 
   const {
     messages,
@@ -44,13 +74,14 @@ export function Chat({
     body: {
       id
     },
+    headers,
     onFinish: () => {
       window.history.replaceState({}, '', `/search/${id}`)
     },
     onError: error => {
       toast.error(`Error in chat: ${error.message}`)
     },
-    sendExtraMessageFields: false, // Disable extra message fields,
+    sendExtraMessageFields: false,
     experimental_throttle: 100
   })
 
