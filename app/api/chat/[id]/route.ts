@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { verifyAccessToken } from '@/lib/privy/verify-access-token';
 import { getChat } from '@/lib/actions/chat'
 import { convertToUIMessages } from '@/lib/utils'
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userId = req.headers.get('x-user-id');
   const authHeader = req.headers.get('authorization') || '';
   const token = authHeader.replace('Bearer ', '');
@@ -21,9 +21,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 
 
+  const { id } = await params
 
-
-  const chat = await getChat(params.id, userId || 'anonymous');
+  const chat = await getChat(id, userId || 'anonymous');
   if (!chat) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
