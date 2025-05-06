@@ -1,5 +1,4 @@
-import { type NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   // Create a response
@@ -34,9 +33,7 @@ export function middleware(request: NextRequest) {
   }
 
   return response
-
 }
-
 
 export const config = {
   matcher: [
@@ -45,8 +42,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - config/models.json (public config file)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+    '/((?!_next/static|_next/image|favicon.ico|config/models.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
+  ]
 }
