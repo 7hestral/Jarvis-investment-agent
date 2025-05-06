@@ -12,7 +12,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Link2, LogOut, Palette } from 'lucide-react'
+import { Link2, LogOut, Palette, Settings2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'
@@ -52,7 +52,9 @@ export default function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+      <Button variant="ghost" size="icon">
+          <Settings2 className="h-5 w-5" /> {/* Choose an icon */}
+          <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-60" align="end" forceMount>

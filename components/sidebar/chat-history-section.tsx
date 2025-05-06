@@ -12,7 +12,7 @@ export async function ChatHistorySection() {
 
   // Fetch the initial page of chats
   const headersList = await headers()
-  // console.log('All headers:', Object.fromEntries(headersList.entries()))
+  console.log('All headers:', Object.fromEntries(headersList.entries()))
 
   const authToken = headersList.get('authorization')?.replace(/^Bearer /, '')
   
