@@ -13,6 +13,9 @@ import { toast } from 'sonner'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
 
+const TRIAL_KEY = 'anon_trials';
+const MAX_TRIALS = 2;
+
 export function Chat({
   id,
   savedMessages = [],
@@ -157,6 +160,25 @@ export function Chat({
   }
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      // 1) haven’t initialized Privy yet?
+    if (!ready) {
+      toast.error('Still initializing, please wait…')
+      return
+    }
+    // 2) anon user out of trials?
+    const isAnon = !authenticated
+    let trials = parseInt(localStorage.getItem(TRIAL_KEY) ?? `${MAX_TRIALS}`, 10);
+    if (isAnon && trials !== null && trials <= 0) {
+      toast.error('No trials left – please log in!')
+      setData(undefined)
+      return
+    }
+
+    // 3) decrement and persist
+    if (isAnon && trials !== null) {
+      const next = trials - 1
+      localStorage.setItem(TRIAL_KEY, String(next))
+    }
     e.preventDefault()
     setData(undefined)
     handleSubmit(e)
