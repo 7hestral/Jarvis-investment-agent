@@ -1,6 +1,7 @@
 'use client'
 
 import { ToolInvocation } from 'ai'
+import { PendleOpportunitiesSection } from './pendle-opportunities-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { SearchSection } from './search-section'
@@ -74,6 +75,14 @@ export function ToolSection({
     case 'retrieve':
       return (
         <RetrieveSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'pendle_opportunities':
+      return (
+        <PendleOpportunitiesSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}
