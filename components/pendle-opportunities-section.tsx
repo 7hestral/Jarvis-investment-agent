@@ -2,16 +2,24 @@ import { OpportunityCard } from './opportunity-card'
 
 interface PendleOpportunitiesSectionProps {
   tool: any
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function PendleOpportunitiesSection({ tool }: PendleOpportunitiesSectionProps) {
+export function PendleOpportunitiesSection({ 
+  tool, 
+  isOpen, 
+  onOpenChange 
+}: PendleOpportunitiesSectionProps) {
   const results = tool.result || []
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="w-full">
       {results.length === 0 && <div>No opportunities found.</div>}
-      {results.map((opp: any, i: number) => (
-        <OpportunityCard key={i} {...opp} />
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {results.map((opp: any, i: number) => (
+          <OpportunityCard key={i} {...opp} />
+        ))}
+      </div>
     </div>
   )
-} 
+}
