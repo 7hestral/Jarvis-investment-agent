@@ -15,12 +15,12 @@ const DEFAULT_MODEL: Model = {
   toolCallType: 'native'
 }
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { messages, id: chatId } = await req.json()
-    const referer = req.headers.get('referer')
+    const { messages, id: chatId } = await request.json()
+    const referer = request.headers.get('referer')
     const isSharePage = referer?.includes('/share/')
-    const userId = req.headers.get('x-user-id') || 'anonymous'
+    const userId = request.headers.get('x-user-id') || 'anonymous'
 
     if (isSharePage) {
       return new Response('Chat API is not available on share pages', {

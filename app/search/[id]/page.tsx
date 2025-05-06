@@ -12,7 +12,23 @@ export async function generateMetadata(props: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await props.params
-  const chat = await getChat(id, 'anonymous')
+  const headersList = await headers()
+  // console.log('All headers:', Object.fromEntries(headersList.entries()))
+
+  const authToken = headersList.get('authorization')?.replace(/^Bearer /, '')
+  
+  let userId = 'anonymous'
+  if (authToken) {
+    try {
+      const claims = await privy.verifyAuthToken(authToken)
+      userId = claims.userId
+    } catch (error) {
+      console.error('Failed to verify auth token:', error)
+    }
+  } else {
+    console.log('No auth token found in headers')
+  }
+  const chat = await getChat(id, userId)
   return {
     title: chat?.title.toString().slice(0, 50) || 'Search'
   }
@@ -49,7 +65,7 @@ export default async function SearchPage(props: {
     redirect('/')
   }
 
-  if (chat?.userId !== userId) {
+  if (chat?.userId !== userId && chat?.userId !== 'anonymous') {
     console.log('Chat user ID does not match user ID')
     notFound()
   }

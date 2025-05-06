@@ -71,7 +71,7 @@ export async function handleStreamFinish({
     }
 
     // Get the chat from the database if it exists, otherwise create a new one
-    const savedChat = (await getChat(chatId)) ?? {
+    const savedChat = (await getChat(chatId, userId)) ?? {
       messages: [],
       createdAt: new Date(),
       path: `/search/${chatId}`,

@@ -1,20 +1,31 @@
+'use client'
+
+import { useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
+// import Link from 'next/link' // No longer needed directly here for Sign In button
 import React from 'react'
-import HistoryContainer from './history-container'
-import { ModeToggle } from './mode-toggle'
-import { IconLogo } from './ui/icons'
-import { LoginButton } from './login-button'
-import { LoginOrDashboardButton } from './login-or-dashboard-button'
-export const Header: React.FC = async () => {
+// import { Button } from './ui/button' // No longer needed directly here for Sign In button
+import GuestMenu from './guest-menu' // Import the new GuestMenu component
+import UserMenu from './user-menu'
+import { usePrivy } from '@privy-io/react-auth'
+
+export const Header: React.FC= () => {
+  const { open } = useSidebar()
+  const { authenticated, ready } = usePrivy()
 
   return (
-    <header className="fixed w-full p-2 flex justify-between items-center z-10 backdrop-blur lg:backdrop-blur-none bg-background/80 lg:bg-transparent">
-      <div>
-      <HistoryContainer />
-      </div>
-      <div className="flex gap-1 items-center">
-        <ModeToggle />
-        <LoginOrDashboardButton />
+    <header
+      className={cn(
+        'absolute top-0 right-0 p-2 flex justify-between items-center z-10 backdrop-blur lg:backdrop-blur-none bg-background/80 lg:bg-transparent transition-[width] duration-200 ease-linear',
+        open ? 'md:w-[calc(100%-var(--sidebar-width))]' : 'md:w-full',
+        'w-full'
+      )}
+    >
+      {/* This div can be used for a logo or title on the left if needed */}
+      <div></div>
+
+      <div className="flex items-center gap-2">
+        {(ready && authenticated) ? <UserMenu /> : <GuestMenu />}
       </div>
     </header>
   )

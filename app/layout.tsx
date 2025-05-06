@@ -1,12 +1,16 @@
-import Footer from '@/components/footer'
+import AppSidebar from '@/components/app-sidebar'
+import ArtifactRoot from '@/components/artifact/artifact-root'
 import Header from '@/components/header'
 import WrappedPrivyProvider from '@/components/privy-provider'
 import { ThemeProvider } from '@/components/theme-provider'
+import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
+import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
 import './globals.css'
+import Footer from '@/components/footer'
 const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans'
@@ -38,7 +42,7 @@ export const viewport: Viewport = {
   maximumScale: 1
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode
@@ -57,14 +61,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <WrappedPrivyProvider>
-            <div className="flex flex-col flex-1">
-              <Header />
-              <main className="flex flex-col flex-1 min-h-0">{children}</main>
-              <Footer />
-            </div>
+        <WrappedPrivyProvider>
+            <SidebarProvider defaultOpen>
+              <AppSidebar />
+              <div className="flex flex-col flex-1">
+                <Header />
+                <main className="flex flex-1 min-h-0">
+                  <ArtifactRoot>{children}</ArtifactRoot>
+                </main>
+              </div>
+            </SidebarProvider>
           </WrappedPrivyProvider>
           <Toaster />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

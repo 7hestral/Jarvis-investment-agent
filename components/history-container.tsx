@@ -35,7 +35,9 @@ const HistoryContainer: React.FC = async () => {
   } else {
     console.log('No auth token found in headers')
   }
-
+  if (userId === 'anonymous') {
+    return null
+  }
   return (
     <div>
       <History>
