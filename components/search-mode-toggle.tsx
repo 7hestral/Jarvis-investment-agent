@@ -14,6 +14,8 @@ export function SearchModeToggle() {
     console.log('savedMode in cookie', savedMode)
     if (savedMode !== null) {
       setIsSearchMode(savedMode === 'true')
+    } else {
+      setCookie('search-mode', 'true')
     }
   }, [])
 
