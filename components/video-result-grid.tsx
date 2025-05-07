@@ -28,7 +28,7 @@ export function VideoResultGrid({
   return (
     <div className={containerClasses}>
       {itemsToMap.map((video, index) => {
-        const baseUrl = video.imageUrl ? video.imageUrl.split('?')[0] : ''
+        const imageUrl = video.imageUrl
         const showOverlay =
           displayMode === 'chat' && index === 3 && videos.length > 4
         const cardClasses = displayMode === 'chat' ? 'w-1/2 md:w-1/4 p-1' : ''
@@ -45,10 +45,10 @@ export function VideoResultGrid({
                 <CardContent className="p-0">
                   {' '}
                   {/* Adjusted padding */}
-                  {baseUrl && (
+                  {imageUrl && (
                     <div className="relative w-full aspect-video bg-muted">
                       <Image
-                        src={baseUrl}
+                        src={imageUrl}
                         alt={`Thumbnail for ${video.title}`}
                         fill
                         sizes={

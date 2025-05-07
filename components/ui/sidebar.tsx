@@ -3,11 +3,10 @@
 import { Slot } from '@radix-ui/react-slot'
 import { VariantProps, cva } from 'class-variance-authority'
 import { PanelLeft } from 'lucide-react'
-import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
-import { IconLogo } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import {
