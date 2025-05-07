@@ -35,25 +35,40 @@ const TokenRow = ({ token }: { token: TokenData }) => {
 
 interface WalletBalanceProps {
   walletAddress?: string;
+  tokenSymbol?: string;
   className?: string;
 }
 
-export function WalletBalance({ walletAddress, className = '' }: WalletBalanceProps) {
+export function WalletBalance({ walletAddress, tokenSymbol, className = '' }: WalletBalanceProps) {
   const { balances, isLoading, error, refetch } = useWalletBalances(walletAddress);
   const [expanded, setExpanded] = useState(false);
   
-  const tokensList = balances?.tokens || [];
+  let tokensList = balances?.tokens || [];
+  
+  // Filter by token symbol if provided
+  if (tokenSymbol && tokensList.length > 0) {
+    const normalizedSymbol = tokenSymbol.toUpperCase();
+    tokensList = tokensList.filter(
+      token => token.symbol.toUpperCase() === normalizedSymbol
+    );
+  }
+  
   const displayTokens = expanded 
     ? tokensList
     : tokensList.slice(0, 3);
+  
+  // Custom title when filtering by token
+  const title = tokenSymbol && tokensList.length > 0
+    ? `${tokensList[0].symbol} Balance`
+    : 'Wallet Balance';
   
   return (
     <Card className={`w-full max-w-2xl mx-auto ${className} shadow-md`}>
       <CardHeader className="pb-4">
         <div className="flex justify-between items-center">
-          <CardTitle>Wallet Balance</CardTitle>
+          <CardTitle>{title}</CardTitle>
           <Badge variant="outline" className="text-sm font-normal">
-            {tokensList.length} Tokens
+            {tokensList.length} {tokensList.length === 1 ? 'Token' : 'Tokens'}
           </Badge>
         </div>
         <CardDescription>
@@ -93,7 +108,12 @@ export function WalletBalance({ walletAddress, className = '' }: WalletBalancePr
         
         {!isLoading && !error && displayTokens.length === 0 && (
           <div className="py-8 text-center">
-            <p className="text-gray-500 mb-2">No tokens found in this wallet</p>
+            <p className="text-gray-500 mb-2">
+              {tokenSymbol 
+                ? `No ${tokenSymbol} tokens found in this wallet`
+                : 'No tokens found in this wallet'
+              }
+            </p>
           </div>
         )}
         
@@ -119,4 +139,4 @@ export function WalletBalance({ walletAddress, className = '' }: WalletBalancePr
       )}
     </Card>
   );
-} 
+}

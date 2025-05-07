@@ -6,6 +6,7 @@ import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { SearchSection } from './search-section'
 import { VideoSearchSection } from './video-search-section'
+import { WalletBalanceSection } from './wallet-balance-section'
 
 interface ToolSectionProps {
   tool: ToolInvocation
@@ -83,6 +84,14 @@ export function ToolSection({
     case 'pendle_opportunities':
       return (
         <PendleOpportunitiesSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'wallet_balance':
+      return (
+        <WalletBalanceSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}
