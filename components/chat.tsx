@@ -8,7 +8,8 @@ import { useChat } from '@ai-sdk/react'
 import { getAccessToken, usePrivy } from '@privy-io/react-auth'
 import { ChatRequestOptions } from 'ai'
 import { Message } from 'ai/react'
-import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useTransition, useState } from 'react'
 import { toast } from 'sonner'
 import { ChatMessages } from './chat-messages'
 import { ChatPanel } from './chat-panel'
@@ -57,6 +58,8 @@ export function Chat({
       })()
     }
   }, [user?.id, ready, authenticated])
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
 
   const {
     messages,
@@ -79,7 +82,10 @@ export function Chat({
     },
     headers,
     onFinish: () => {
-      window.history.replaceState({}, '', `/search/${id}`)
+      router.replace(`/search/${id}`)
+      startTransition(() => {
+        router.refresh()
+      })
     },
     onError: error => {
       toast.error(`Error in chat: ${error.message}`)

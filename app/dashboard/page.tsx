@@ -40,7 +40,10 @@ export default function DashboardPage() {
   } = usePrivy();
 
   useEffect(() => {
+    console.log("ready in dashboard", ready)
+    console.log("authenticated", authenticated)
     if (ready && !authenticated) {
+      console.log("pushing to /")
       router.push("/");
     }
   }, [ready, authenticated, router]);

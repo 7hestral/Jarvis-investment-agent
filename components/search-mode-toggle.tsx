@@ -7,13 +7,15 @@ import { useEffect, useState } from 'react'
 import { Toggle } from './ui/toggle'
 
 export function SearchModeToggle() {
-  const [isSearchMode, setIsSearchMode] = useState(false)
+  const [isSearchMode, setIsSearchMode] = useState(true)
 
   useEffect(() => {
     const savedMode = getCookie('search-mode')
     console.log('savedMode in cookie', savedMode)
     if (savedMode !== null) {
       setIsSearchMode(savedMode === 'true')
+    } else {
+      setCookie('search-mode', 'true')
     }
   }, [])
 
