@@ -2,16 +2,11 @@
 
 import { useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { Wallet } from 'lucide-react'
-import Link from 'next/link'
-import React from 'react'
-import HistoryContainer from './history-container'
-import { ModeToggle } from './mode-toggle'
-import { Button } from './ui/button'
-import { IconLogo } from './ui/icons'
-import GuestMenu from './guest-menu'
-import UserMenu from './user-menu'
 import { usePrivy } from '@privy-io/react-auth'
+import React from 'react'
+import GuestMenu from './guest-menu'
+import { IconLogo } from './ui/icons'
+import UserMenu from './user-menu'
 
 export const Header: React.FC = () => {
   const { open } = useSidebar()
@@ -32,19 +27,9 @@ export const Header: React.FC = () => {
           <IconLogo className={cn('w-5 h-5')} />
           <span className="sr-only">Morphic</span>
         </a>
-        <nav className="flex space-x-4">
-          <Link href="/wallet" passHref>
-            <Button variant="outline" size="sm" className="flex items-center gap-1.5 border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary font-medium transition-all">
-              <Wallet className="h-4 w-4" />
-              <span>Wallet</span>
-            </Button>
-          </Link>
-        </nav>
       </div>
 
       <div className="flex items-center gap-2">
-        <ModeToggle />
-        <HistoryContainer />
         {(ready && authenticated) ? <UserMenu /> : <GuestMenu />}
       </div>
     </header>
