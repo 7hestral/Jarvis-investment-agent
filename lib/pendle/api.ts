@@ -33,6 +33,10 @@ export function processPendleMarkets(markets: PendleMarket[]): SimplifiedPendleM
     name: market.name,
     address: market.address,
     expiry: market.expiry,
+    pt: market.pt,
+    yt: market.yt,
+    sy: market.sy,
+    underlyingAsset: market.underlyingAsset,
     liquidity: market.details.liquidity,
     impliedApy: market.details.impliedApy
   }))
