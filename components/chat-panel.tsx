@@ -13,6 +13,7 @@ import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
+import { usePrivy } from '@privy-io/react-auth'
 
 interface ChatPanelProps {
   input: string
@@ -48,6 +49,9 @@ export function ChatPanel({
   const isFirstRender = useRef(true)
   const [isComposing, setIsComposing] = useState(false) // Composition state
   const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
+  const {ready, authenticated, user} = usePrivy()
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [walletAddress, setWalletAddress] = useState('')
   const { close: closeArtifact } = useArtifact()
 
   const handleCompositionStart = () => setIsComposing(true)
@@ -92,6 +96,28 @@ export function ChatPanel({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
+
+  useEffect(
+    (() => {
+      if (!ready) {
+        return
+      }
+      if (!authenticated) {
+        return
+      }
+      if (user) {
+        const created = new Date(user!.createdAt);
+        const now     = new Date();
+        
+        // e.g. consider "first login" if created < 1 minute ago
+        const isFirstLogin = (now.getTime() - created.getTime()) < 60_000;
+        setIsNewUser(isFirstLogin)
+        setWalletAddress(user.wallet?.address || '')
+        
+      }
+
+    }), [ready, authenticated, user]
+  )
 
   // Add scroll to bottom handler
   const handleScrollToBottom = () => {
