@@ -1,22 +1,41 @@
 import { Button } from '@/components/ui/button'
-import { ArrowRight } from 'lucide-react'
+import {
+  ArrowRight,
+  Globe2,
+  Link,
+  Youtube,
+  type LucideIcon
+} from 'lucide-react'
 
-const exampleMessages = [
+const exampleMessages: {
+  heading: string
+  message: string
+  icon: LucideIcon
+  iconAriaLabel: string
+}[] = [
   {
-    heading: 'Analyze NVIDIA Q4 2024 Earnings',
-    message: 'Analyze NVIDIA Q4 2024 Earnings'
+    heading: "Explore yield opportunities on Pendle",
+    message: "List the yielding opportunities on Pendle",
+    icon: Globe2,
+    iconAriaLabel: 'Web search'
   },
   {
-    heading: 'Compare Tesla vs. BYD Market Position',
-    message: 'Compare Tesla vs. BYD Market Position'
+    heading: 'Explain how airdrop works',
+    message: 'Explain the purpose of airdrop and common ways of participating',
+    icon: Globe2,
+    iconAriaLabel: 'Web search'
   },
   {
-    heading: 'Microsoft AI Strategy Impact',
-    message: "Analyze Microsoft's AI strategy and its impact on future growth"
+    heading: 'Find videos explaining Pendle protocol',
+    message: 'Find videos explaining how Pendle protocol work',
+    icon: Youtube,
+    iconAriaLabel: 'Video search'
   },
   {
-    heading: 'Meta Platforms Growth Analysis',
-    message: "Analyze Meta Platforms' growth trajectory and key drivers"
+    heading: 'Summary: https://docs.pendle.finance/ProtocolMechanics/Glossary',
+    message: 'Summary: https://docs.pendle.finance/ProtocolMechanics/Glossary',
+    icon: Link,
+    iconAriaLabel: 'Summarize link'
   }
 ]
 export function EmptyScreen({
@@ -41,6 +60,11 @@ export function EmptyScreen({
               }}
             >
               <ArrowRight size={16} className="mr-2 text-muted-foreground" />
+              <message.icon
+                size={16}
+                className="mr-2 text-muted-foreground"
+                aria-label={message.iconAriaLabel}
+              />
               {message.heading}
             </Button>
           ))}
