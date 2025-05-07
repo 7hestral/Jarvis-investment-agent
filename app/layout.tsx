@@ -5,12 +5,10 @@ import WrappedPrivyProvider from '@/components/privy-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { Toaster } from '@/components/ui/sonner'
-import { privy } from '@/lib/privy/verify-access-token'
 import { cn } from '@/lib/utils'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
-import { cookies } from 'next/headers'
 import './globals.css'
 const fontSans = FontSans({
   subsets: ['latin'],
@@ -48,18 +46,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const cookiesList = await cookies()
-  const privyToken = cookiesList.get('privy-token')?.value
-
-  let authenticated = false
-  if (privyToken) {
-    try {
-      const verifiedClaims = await privy.verifyAuthToken(privyToken)
-      authenticated = true
-    } catch (error) {
-      console.error('Failed to verify auth token:', error)
-    }
-  }
   return (
     <html lang="en" suppressHydrationWarning>
       <body
