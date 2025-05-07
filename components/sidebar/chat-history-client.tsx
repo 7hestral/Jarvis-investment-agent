@@ -85,7 +85,7 @@ export function ChatHistoryClient({
     <div className="flex-1 overflow-y-auto mb-2 relative">
       {!chats?.length && !isLoading && nextOffset === null ? (
         <div className="px-2 text-foreground/30 text-sm text-center py-4">
-          No search history
+          No history
         </div>
       ) : (
         <SidebarMenu>

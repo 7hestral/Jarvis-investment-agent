@@ -4,8 +4,10 @@ import { Slot } from '@radix-ui/react-slot'
 import { VariantProps, cva } from 'class-variance-authority'
 import { PanelLeft } from 'lucide-react'
 import * as React from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Button } from '@/components/ui/button'
+import { IconLogo } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -24,6 +26,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils/index'
+import { usePrivy } from '@privy-io/react-auth'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -272,6 +275,17 @@ const SidebarTrigger = React.forwardRef<
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
+  const { authenticated, ready } = usePrivy()
+  const router = useRouter()
+
+  // if (!ready || (ready && !authenticated)) {
+  //   // return (
+  //   //   <a href="/" className={cn('size-6', className)}>
+  //   //     <IconLogo className="size-5" />
+  //   //   </a>
+  //   // )
+  //   return null
+  // }
 
   return (
     <Button
@@ -283,6 +297,7 @@ const SidebarTrigger = React.forwardRef<
       onClick={event => {
         onClick?.(event)
         toggleSidebar()
+        router.refresh()
       }}
       {...props}
     >

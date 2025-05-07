@@ -1,6 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get('privy_oauth_code')
+  if (code) {
+    console.log('Middleware saw OAuth code:', code)
+    // Create a new response with the modified headers
+    const response = NextResponse.next()
+    response.headers.set('x-privy-oauth-code', code)
+    return response
+  }
   // Create a response
   const response = NextResponse.next()
 

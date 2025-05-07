@@ -16,14 +16,24 @@ import { ChatHistorySection } from './sidebar/chat-history-section'
 import { ChatHistorySkeleton } from './sidebar/chat-history-skeleton'
 import { IconLogo } from './ui/icons'
 
-export default function AppSidebar() {
+// Immediate console log to verify module loading
+console.log('[AppSidebar] Module loaded')
+
+export default async function AppSidebar() {
+  // Immediate console log to verify component function execution
+  console.log('[AppSidebar] Component function called')
+
   return (
     <Sidebar side="left" variant="sidebar" collapsible="offcanvas">
       <SidebarHeader className="flex flex-row justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 px-2 py-3">
-          <IconLogo className={cn('size-5')} />
-          <span className="font-semibold text-sm">Jarvis</span>
-        </Link>
+        <div className="flex items-center gap-2 px-2 py-3">
+          <a href="/" className="size-5">
+            <IconLogo className={cn('size-5')} />
+          </a>
+          <Link href="/" className="font-semibold text-sm">
+            Jarvis
+          </Link>
+        </div>
         <SidebarTrigger />
       </SidebarHeader>
       <SidebarContent className="flex flex-col px-2 py-4 h-full">

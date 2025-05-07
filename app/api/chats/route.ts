@@ -1,6 +1,7 @@
 import { getChatsPage } from '@/lib/actions/chat'
 import { type Chat } from '@/lib/types'
 import { NextRequest, NextResponse } from 'next/server'
+import { privy } from '@/lib/privy/verify-access-token'
 
 interface ChatPageResponse {
   chats: Chat[]
@@ -17,7 +18,19 @@ export async function GET(request: NextRequest) {
   const offset = parseInt(searchParams.get('offset') || '0', 10)
   const limit = parseInt(searchParams.get('limit') || '20', 10)
 
-  const userId = request.headers.get('x-user-id') || 'anonymous'
+  const privyToken = request.cookies.get('privy-token')?.value
+
+  let userId = 'anonymous'
+  if (privyToken) {
+    const claims = await privy.verifyAuthToken(privyToken)
+    userId = claims.userId
+  }
+
+  if (userId === 'anonymous') {
+    return NextResponse.json<ChatPageResponse>({ chats: [], nextOffset: null })
+  }
+
+  console.log('userId in chats route', userId)
 
   try {
     const result = await getChatsPage(userId, limit, offset)

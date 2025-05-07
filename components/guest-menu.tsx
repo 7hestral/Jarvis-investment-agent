@@ -11,8 +11,9 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { toast } from 'sonner'
 import type { LinkedAccountWithMetadata, User } from '@privy-io/react-auth'
-import { getAccessToken, useLogin } from '@privy-io/react-auth'
+import { getAccessToken, useLogin, usePrivy } from '@privy-io/react-auth'
 import {
   Link2,
   LogIn,
@@ -22,10 +23,15 @@ import {
 import { useRouter } from 'next/navigation'
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'
-
+import { useEffect } from 'react'
 export default function GuestMenu() {
   const router = useRouter()
+  const { ready, authenticated } = usePrivy()
+
   const { login } = useLogin({
+    onError: async (error) => {
+      console.error('Error during login:', error)
+    },
     onComplete: async (params: {
       user: User
       isNewUser: boolean
@@ -39,13 +45,32 @@ export default function GuestMenu() {
           throw new Error('No access token available')
         }
         document.cookie = `privy-token=${token}; path=/; max-age=2592000; SameSite=Lax`
-        router.push('/')
-        router.refresh()
+        console.log("setting cookie")
+        console.log(params)
+        // await router.push('/')
+        // router.refresh()
+
       } catch (error) {
         console.error('Error during login:', error)
       }
     }
   })
+
+  // const handleLogin = async () => {
+  //   await login()
+  //   // console.log('login complete, redirecting to /')
+  //   // await router.push('/')
+  //   await router.refresh()
+  // }
+
+  useEffect(() => {
+    console.log('ready', ready)
+    console.log('authenticated', authenticated)
+    if (ready && authenticated) {
+      console.log('Authenticated, refreshing...')
+      router.refresh()
+    }
+  }, [ready, authenticated, router])
 
   return (
     <DropdownMenu>
@@ -59,7 +84,7 @@ export default function GuestMenu() {
         <DropdownMenuItem asChild={false}>
           <button
             type="button"
-            onClick={() => login()}
+            onClick={login}
             className="flex items-center w-full px-2 py-1.5 text-sm cursor-pointer hover:bg-accent focus:bg-accent focus:outline-none"
           >
             <LogIn className="mr-2 h-4 w-4" />

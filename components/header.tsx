@@ -12,6 +12,8 @@ import { usePrivy } from '@privy-io/react-auth'
 export const Header: React.FC= () => {
   const { open } = useSidebar()
   const { authenticated, ready } = usePrivy()
+  console.log('authenticated in header', authenticated)
+  console.log('ready in header', ready)
 
   return (
     <header
