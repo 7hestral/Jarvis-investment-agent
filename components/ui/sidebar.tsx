@@ -277,14 +277,14 @@ const SidebarTrigger = React.forwardRef<
   const { authenticated, ready } = usePrivy()
   const router = useRouter()
 
-  // if (!ready || (ready && !authenticated)) {
-  //   // return (
-  //   //   <a href="/" className={cn('size-6', className)}>
-  //   //     <IconLogo className="size-5" />
-  //   //   </a>
-  //   // )
-  //   return null
-  // }
+  if (!ready || (ready && !authenticated)) {
+    // return (
+    //   <a href="/" className={cn('size-6', className)}>
+    //     <IconLogo className="size-5" />
+    //   </a>
+    // )
+    return null
+  }
 
   return (
     <Button
