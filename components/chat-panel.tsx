@@ -2,18 +2,21 @@
 
 import { Model } from '@/lib/types/models'
 import { cn } from '@/lib/utils'
+import { usePrivy } from '@privy-io/react-auth'
 import { Message } from 'ai'
 import { ArrowUp, ChevronDown, MessageCirclePlus, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Textarea from 'react-textarea-autosize'
 import { useArtifact } from './artifact/artifact-context'
+import { CopyableWalletAddress } from './copyable-wallet-address'
 import { EmptyScreen } from './empty-screen'
 import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
-
+import { WelcomeMessage } from './welcome-messages'
+import { CopyableWalletAddressSkeleton } from './copyable-wallet-address-skeleton'
 interface ChatPanelProps {
   input: string
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -48,7 +51,14 @@ export function ChatPanel({
   const isFirstRender = useRef(true)
   const [isComposing, setIsComposing] = useState(false) // Composition state
   const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
+  const { ready, authenticated, user } = usePrivy()
+  const [isNewUser, setIsNewUser] = useState(false)
+  const [walletAddress, setWalletAddress] = useState('')
   const { close: closeArtifact } = useArtifact()
+
+  // Generate a deterministic seed for welcome message based on date
+  // This will change each day but remain consistent throughout the day
+  const welcomeSeed = useRef(new Date().getDate()).current
 
   const handleCompositionStart = () => setIsComposing(true)
 
@@ -93,6 +103,24 @@ export function ChatPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
 
+  useEffect(() => {
+    if (!ready) {
+      return
+    }
+    if (!authenticated) {
+      return
+    }
+    if (user) {
+      const created = new Date(user!.createdAt)
+      const now = new Date()
+
+      // e.g. consider "first login" if created < 1 minute ago
+      const isFirstLogin = now.getTime() - created.getTime() < 60_000
+      setIsNewUser(isFirstLogin)
+      setWalletAddress(user.wallet?.address || '')
+    }
+  }, [ready, authenticated, user])
+
   // Add scroll to bottom handler
   const handleScrollToBottom = () => {
     const scrollContainer = document.getElementById('scroll-container')
@@ -114,9 +142,37 @@ export function ChatPanel({
       {messages.length === 0 && (
         <div className="mb-10 flex flex-col items-center gap-4">
           <IconLogo className="size-12 text-muted-foreground" />
-          <p className="text-center text-3xl font-semibold">
-            How can I help you with your investments today?
-          </p>
+          {
+            !ready && (
+              <CopyableWalletAddressSkeleton
+                className="justify-center"
+              />
+            )
+          }
+          {
+            ready && !authenticated && (
+              <CopyableWalletAddress
+                walletAddress=""
+                className="justify-center"
+                walletAddressNotAvailableText="Please sign in to obtain your wallet address"
+              />
+            )
+          }
+          {ready && authenticated && isNewUser && user && (
+            <CopyableWalletAddress
+              walletAddress={walletAddress}
+              className="justify-center"
+              walletAddressIntroText="🎉 Congrats! Your wallet has been successfully created:"
+            />
+          )}
+          {ready && authenticated && user && !isNewUser && (
+            <CopyableWalletAddress
+              walletAddress={walletAddress}
+              className="justify-center"
+              walletAddressIntroText="Your wallet address:"
+            />
+          )}
+          <WelcomeMessage seed={welcomeSeed} />
         </div>
       )}
       <form
