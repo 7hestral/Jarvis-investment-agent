@@ -15,7 +15,8 @@ import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
-
+import { WelcomeMessage } from './welcome-messages'
+import { CopyableWalletAddressSkeleton } from './copyable-wallet-address-skeleton'
 interface ChatPanelProps {
   input: string
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -54,6 +55,10 @@ export function ChatPanel({
   const [isNewUser, setIsNewUser] = useState(false)
   const [walletAddress, setWalletAddress] = useState('')
   const { close: closeArtifact } = useArtifact()
+
+  // Generate a deterministic seed for welcome message based on date
+  // This will change each day but remain consistent throughout the day
+  const welcomeSeed = useRef(new Date().getDate()).current
 
   const handleCompositionStart = () => setIsComposing(true)
 
@@ -137,23 +142,37 @@ export function ChatPanel({
       {messages.length === 0 && (
         <div className="mb-10 flex flex-col items-center gap-4">
           <IconLogo className="size-12 text-muted-foreground" />
-          {ready && authenticated && isNewUser && user && walletAddress && (
+          {
+            !ready && (
+              <CopyableWalletAddressSkeleton
+                className="justify-center"
+              />
+            )
+          }
+          {
+            ready && !authenticated && (
+              <CopyableWalletAddress
+                walletAddress=""
+                className="justify-center"
+                walletAddressNotAvailableText="Please sign in to obtain your wallet address"
+              />
+            )
+          }
+          {ready && authenticated && isNewUser && user && (
             <CopyableWalletAddress
               walletAddress={walletAddress}
               className="justify-center"
               walletAddressIntroText="🎉 Congrats! Your wallet has been successfully created:"
             />
           )}
-          {ready && authenticated && user && walletAddress && !isNewUser && (
+          {ready && authenticated && user && !isNewUser && (
             <CopyableWalletAddress
               walletAddress={walletAddress}
               className="justify-center"
               walletAddressIntroText="Your wallet address:"
             />
           )}
-          <p className="text-center text-3xl font-semibold">
-            How can I help you with your investments today?
-          </p>
+          <WelcomeMessage seed={welcomeSeed} />
         </div>
       )}
       <form

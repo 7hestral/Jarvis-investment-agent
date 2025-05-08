@@ -9,12 +9,14 @@ interface CopyableWalletAddressProps {
   walletAddress: string
   className?: string
   walletAddressIntroText?: string
+  walletAddressNotAvailableText?: string
 }
 
 export function CopyableWalletAddress({
   walletAddress,
   className,
-  walletAddressIntroText
+  walletAddressIntroText,
+  walletAddressNotAvailableText
 }: CopyableWalletAddressProps) {
   const [hasCopied, setHasCopied] = useState(false)
 
@@ -34,8 +36,20 @@ export function CopyableWalletAddress({
     }
   }, [hasCopied])
 
+
   if (!walletAddress) {
-    return null
+    return (
+      <div
+        className={cn(
+          'flex items-center gap-2 text-sm text-muted-foreground',
+          className
+        )}
+      >
+        <span>
+          {walletAddressNotAvailableText || 'Wallet address not available.'}
+        </span>
+      </div>
+    )
   }
 
   const shortAddress = `${walletAddress.substring(
@@ -50,7 +64,9 @@ export function CopyableWalletAddress({
         className
       )}
     >
-      <span>{walletAddressIntroText || 'Your wallet address:'} {shortAddress}</span>
+      <span>
+        {walletAddressIntroText || 'Your wallet address:'} {shortAddress}
+      </span>
       <Button
         onClick={onCopy}
         variant="ghost"
