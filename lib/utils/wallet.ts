@@ -116,10 +116,12 @@ export async function getWalletBalances(
   walletAddressParam?: string,
   rpcUrl: string = "http://localhost:8545"
 ): Promise<WalletBalanceResult> {
-  // Use provided wallet address, environment variable, or default to the sample address
-  const walletAddress = walletAddressParam || 
-                        (typeof window === 'undefined' ? process.env.WALLET_ADDRESS : undefined) || 
-                        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+  // Use provided wallet address or environment variable
+  const walletAddress = walletAddressParam || process.env.WALLET_ADDRESS;
+  
+  if (!walletAddress) {
+    throw new Error("No wallet address provided and WALLET_ADDRESS environment variable is not set.");
+  }
   
   const provider = new ethers.JsonRpcProvider(rpcUrl);
   
