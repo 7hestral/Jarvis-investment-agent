@@ -2,18 +2,19 @@
 
 import { Model } from '@/lib/types/models'
 import { cn } from '@/lib/utils'
+import { usePrivy } from '@privy-io/react-auth'
 import { Message } from 'ai'
 import { ArrowUp, ChevronDown, MessageCirclePlus, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Textarea from 'react-textarea-autosize'
 import { useArtifact } from './artifact/artifact-context'
+import { CopyableWalletAddress } from './copyable-wallet-address'
 import { EmptyScreen } from './empty-screen'
 import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
-import { usePrivy } from '@privy-io/react-auth'
 
 interface ChatPanelProps {
   input: string
@@ -49,7 +50,7 @@ export function ChatPanel({
   const isFirstRender = useRef(true)
   const [isComposing, setIsComposing] = useState(false) // Composition state
   const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
-  const {ready, authenticated, user} = usePrivy()
+  const { ready, authenticated, user } = usePrivy()
   const [isNewUser, setIsNewUser] = useState(false)
   const [walletAddress, setWalletAddress] = useState('')
   const { close: closeArtifact } = useArtifact()
@@ -97,27 +98,23 @@ export function ChatPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query])
 
-  useEffect(
-    (() => {
-      if (!ready) {
-        return
-      }
-      if (!authenticated) {
-        return
-      }
-      if (user) {
-        const created = new Date(user!.createdAt);
-        const now     = new Date();
-        
-        // e.g. consider "first login" if created < 1 minute ago
-        const isFirstLogin = (now.getTime() - created.getTime()) < 60_000;
-        setIsNewUser(isFirstLogin)
-        setWalletAddress(user.wallet?.address || '')
-        
-      }
+  useEffect(() => {
+    if (!ready) {
+      return
+    }
+    if (!authenticated) {
+      return
+    }
+    if (user) {
+      const created = new Date(user!.createdAt)
+      const now = new Date()
 
-    }), [ready, authenticated, user]
-  )
+      // e.g. consider "first login" if created < 1 minute ago
+      const isFirstLogin = now.getTime() - created.getTime() < 60_000
+      setIsNewUser(isFirstLogin)
+      setWalletAddress(user.wallet?.address || '')
+    }
+  }, [ready, authenticated, user])
 
   // Add scroll to bottom handler
   const handleScrollToBottom = () => {
@@ -140,6 +137,20 @@ export function ChatPanel({
       {messages.length === 0 && (
         <div className="mb-10 flex flex-col items-center gap-4">
           <IconLogo className="size-12 text-muted-foreground" />
+          {ready && authenticated && isNewUser && user && walletAddress && (
+            <CopyableWalletAddress
+              walletAddress={walletAddress}
+              className="justify-center"
+              walletAddressIntroText="🎉 Congrats! Your wallet has been successfully created:"
+            />
+          )}
+          {ready && authenticated && user && walletAddress && !isNewUser && (
+            <CopyableWalletAddress
+              walletAddress={walletAddress}
+              className="justify-center"
+              walletAddressIntroText="Your wallet address:"
+            />
+          )}
           <p className="text-center text-3xl font-semibold">
             How can I help you with your investments today?
           </p>
