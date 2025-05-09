@@ -5,7 +5,9 @@ import { PendleOpportunitiesSection } from './pendle-opportunities-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { SearchSection } from './search-section'
+import { SimpleQuoteDisplay } from './simple-quote-display'
 import { VideoSearchSection } from './video-search-section'
+import { WalletBalanceSection } from './wallet-balance-section'
 
 interface ToolSectionProps {
   tool: ToolInvocation
@@ -83,6 +85,25 @@ export function ToolSection({
     case 'pendle_opportunities':
       return (
         <PendleOpportunitiesSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'pendle_quote':
+      return (
+        <div className="flex flex-col space-y-4 py-4">
+          <div className="flex flex-col">
+            <h3 className="text-base font-medium">Pendle Quote</h3>
+            <div className="mt-2">
+              <SimpleQuoteDisplay tool={tool} isOpen={isOpen} onOpenChange={onOpenChange} />
+            </div>
+          </div>
+        </div>
+      )
+    case 'wallet_balance':
+      return (
+        <WalletBalanceSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}
