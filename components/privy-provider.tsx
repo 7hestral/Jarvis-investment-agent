@@ -1,17 +1,19 @@
 'use client'
 
 import { PrivyProvider } from '@privy-io/react-auth'
+import { useTheme } from 'next-themes'
 
 export default function WrappedPrivyProvider({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme()
   return <PrivyProvider 
   appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID!}
   config={{
   "appearance": {
     "accentColor": "#6A6FF5",
-    "theme": "#FFFFFF",
+    "theme": theme === "Dark" ? "dark" : "light",
     "showWalletLoginFirst": false,
     "logo": "https://auth.privy.io/logos/privy-logo.png",
-    "walletChainType": "ethereum-only",
+    "walletChainType": "ethereum-and-solana",
     "walletList": [
       "detected_ethereum_wallets",
       "metamask",
@@ -34,10 +36,10 @@ export default function WrappedPrivyProvider({ children }: { children: React.Rea
     "requireUserPasswordOnCreate": false,
     "showWalletUIs": true,
     "ethereum": {
-      "createOnLogin": "users-without-wallets"
+      "createOnLogin": "all-users"
     },
     "solana": {
-      "createOnLogin": "off"
+      "createOnLogin": "all-users"
     }
   },
   "mfa": {

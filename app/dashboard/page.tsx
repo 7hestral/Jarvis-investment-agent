@@ -48,6 +48,11 @@ export default function DashboardPage() {
     }
   }, [ready, authenticated, router]);
 
+  useEffect(() => {
+    console.log("user", user)
+  }, [user])
+
+
   const numAccounts = user?.linkedAccounts?.length || 0;
   const canRemoveAccount = numAccounts > 1;
 

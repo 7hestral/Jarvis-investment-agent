@@ -17,6 +17,7 @@ import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
 import { WelcomeMessage } from './welcome-messages'
 import { CopyableWalletAddressSkeleton } from './copyable-wallet-address-skeleton'
+import { useWalletAddresses } from './useEvmAndSolAddresses'
 interface ChatPanelProps {
   input: string
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -52,6 +53,7 @@ export function ChatPanel({
   const [isComposing, setIsComposing] = useState(false) // Composition state
   const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
   const { ready, authenticated, user } = usePrivy()
+  const { evmAddress, solAddress } = useWalletAddresses(ready, authenticated, user)
   const [isNewUser, setIsNewUser] = useState(false)
   const [walletAddress, setWalletAddress] = useState('')
   const { close: closeArtifact } = useArtifact()
@@ -144,33 +146,59 @@ export function ChatPanel({
           <IconLogo className="size-12 text-muted-foreground" />
           {
             !ready && (
+              <div>
               <CopyableWalletAddressSkeleton
                 className="justify-center"
               />
+              <CopyableWalletAddressSkeleton
+                className="justify-center"
+              />
+              </div>
             )
           }
           {
             ready && !authenticated && (
+              <div>
               <CopyableWalletAddress
                 walletAddress=""
                 className="justify-center"
-                walletAddressNotAvailableText="Please sign in to obtain your wallet address"
+                walletAddressNotAvailableText="Please sign in"
               />
+              <CopyableWalletAddress
+                walletAddress=""
+                className="justify-center"
+                walletAddressNotAvailableText="We will create/retrieve your wallets"
+              />
+              </div>
             )
           }
-          {ready && authenticated && isNewUser && user && (
+          {evmAddress && solAddress && isNewUser && (
+            <div>
             <CopyableWalletAddress
-              walletAddress={walletAddress}
+              walletAddress={evmAddress}
               className="justify-center"
-              walletAddressIntroText="🎉 Congrats! Your wallet has been successfully created:"
+              walletAddressIntroText="🎉 Congrats! Your wallet has been successfully created. EVM wallet address:"
             />
+            <CopyableWalletAddress
+              walletAddress={solAddress}
+              className="justify-center"
+              walletAddressIntroText="Your Solana wallet address:"
+            />
+            </div>
           )}
-          {ready && authenticated && user && !isNewUser && (
+          {evmAddress && solAddress && !isNewUser && (
+            <div>
             <CopyableWalletAddress
-              walletAddress={walletAddress}
+              walletAddress={evmAddress}
               className="justify-center"
-              walletAddressIntroText="Your wallet address:"
+              walletAddressIntroText="Your EVM wallet address:"
             />
+            <CopyableWalletAddress
+            walletAddress={solAddress}
+            className="justify-center"
+            walletAddressIntroText="Your Solana wallet address:"
+          />
+          </div>
           )}
           <WelcomeMessage seed={welcomeSeed} />
         </div>

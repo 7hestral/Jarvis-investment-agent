@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import type { LinkedAccountWithMetadata, User } from '@privy-io/react-auth'
-import { getAccessToken, useLogin, usePrivy } from '@privy-io/react-auth'
+import { getAccessToken, useLogin, usePrivy, useFundWallet } from '@privy-io/react-auth'
 import {
   Link2,
   LogIn,
@@ -23,10 +23,16 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'
+import { getWalletAddresses } from './useEvmAndSolAddresses'
+import { sepolia } from 'viem/chains'
+import { useFundWallet as useSolanaFundWallet } from '@privy-io/react-auth/solana';
+
 
 export default function GuestMenu() {
   const router = useRouter()
   const { ready, authenticated } = usePrivy()
+  const { fundWallet } = useFundWallet()
+  const { fundWallet: fundSolanaWallet } = useSolanaFundWallet()
 
   const { login } = useLogin({
     onError: async (error) => {
@@ -40,15 +46,30 @@ export default function GuestMenu() {
       loginAccount: LinkedAccountWithMetadata | null
     }) => {
       try {
-        const token = await getAccessToken()
-        if (!token) {
-          throw new Error('No access token available')
-        }
-        document.cookie = `privy-token=${token}; path=/; max-age=2592000; SameSite=Lax`
-        console.log("setting cookie")
-        console.log(params)
-        // await router.push('/')
-        // router.refresh()
+        const { user, isNewUser } = params
+
+        // const { evmAddress, solAddress } = getWalletAddresses(user)
+        // console.log("first login", isNewUser)
+        // console.log("user in guest menu", user)
+        // const token = await getAccessToken()
+        // if (!token) {
+        //   throw new Error('No access token available')
+        // }
+        // document.cookie = `privy-token=${token}; path=/; max-age=2592000; SameSite=Lax`
+        // console.log("setting cookie")
+        // console.log(params)
+        // // await router.push('/')
+        // // router.refresh()
+        // if (!isNewUser) {
+        //   await fundWallet(evmAddress, {
+        //     chain: sepolia,
+        //     asset: 'native-currency'
+        //   })
+        //   await fundSolanaWallet(solAddress, {
+        //     cluster: {name: 'devnet'}
+        //   }
+        // )
+        // }
 
       } catch (error) {
         console.error('Error during login:', error)
