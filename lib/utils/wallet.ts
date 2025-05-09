@@ -132,13 +132,13 @@ export async function getWalletBalances(
     // Start with our known tokens
     let tokenAddresses = new Set(KNOWN_TOKENS.map(addr => addr.toLowerCase()));
     
-    // Try to discover additional tokens
-    try {
-      const discoveredTokens = await discoverTokens(walletAddress, provider);
-      discoveredTokens.forEach(addr => tokenAddresses.add(addr));
-    } catch (error) {
-      console.error("Token discovery failed, using only known tokens");
-    }
+    // // Try to discover additional tokens
+    // try {
+    //   const discoveredTokens = await discoverTokens(walletAddress, provider);
+    //   discoveredTokens.forEach(addr => tokenAddresses.add(addr));
+    // } catch (error) {
+    //   console.error("Token discovery failed, using only known tokens");
+    // }
     
     // Get data for all tokens in parallel
     const tokenDataPromises = Array.from(tokenAddresses).map(addr => 
