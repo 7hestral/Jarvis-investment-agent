@@ -12,21 +12,13 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import type { LinkedAccountWithMetadata, User } from '@privy-io/react-auth'
-import { getAccessToken, useLogin, usePrivy, useFundWallet } from '@privy-io/react-auth'
-import {
-  Link2,
-  LogIn,
-  Palette,
-  Settings2
-} from 'lucide-react'
+import { useFundWallet, useLogin, usePrivy } from '@privy-io/react-auth'
+import { useFundWallet as useSolanaFundWallet } from '@privy-io/react-auth/solana'
+import { Link2, LogIn, Palette, Settings2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'
-import { getWalletAddresses } from './useEvmAndSolAddresses'
-import { sepolia } from 'viem/chains'
-import { useFundWallet as useSolanaFundWallet } from '@privy-io/react-auth/solana';
-
 
 export default function GuestMenu() {
   const router = useRouter()
@@ -35,7 +27,7 @@ export default function GuestMenu() {
   const { fundWallet: fundSolanaWallet } = useSolanaFundWallet()
 
   const { login } = useLogin({
-    onError: async (error) => {
+    onError: async error => {
       console.error('Error during login:', error)
     },
     onComplete: async (params: {
@@ -70,7 +62,6 @@ export default function GuestMenu() {
         //   }
         // )
         // }
-
       } catch (error) {
         console.error('Error during login:', error)
       }
