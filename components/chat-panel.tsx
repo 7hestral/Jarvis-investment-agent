@@ -19,6 +19,7 @@ import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
 import { WelcomeMessage } from './welcome-messages'
 import { WalletWithMetadata, useHeadlessDelegatedActions, useWallets, useSolanaWallets } from '@privy-io/react-auth'
+import { toast } from 'sonner'
 
 interface ChatPanelProps {
   input: string
@@ -143,7 +144,7 @@ export function ChatPanel({
     const now = new Date()
 
     // e.g. consider "first login" if created < 2 minute ago
-    const isFirstLogin = now.getTime() - created.getTime() < 120_000
+    const isFirstLogin = now.getTime() - created.getTime() < 600_000
     if (evmReady && solanaReady && isFirstLogin) {
       const evmWallet = user.linkedAccounts.find((wallet) => {
         if (wallet.type == 'wallet') {
@@ -158,14 +159,16 @@ export function ChatPanel({
         wallet => wallet.walletClientType === 'privy'
       ) as WalletWithMetadata | undefined
 
-      if (evmWallet?.address) {
+      if (evmWallet?.address && !evmWallet.delegated) {
 
         console.log('evmWallet delegated')
         delegateWallet({ address: evmWallet.address, chainType: 'ethereum' })
+        toast.success('EVM wallet delegated')
       }
-      if (solWallet?.address) {
+      if (solWallet?.address && !solWallet.delegated) {
         console.log('solWallet delegated')
         delegateWallet({ address: solWallet.address, chainType: 'solana' })
+        toast.success('Solana wallet delegated')
       }
     }
   }, [evmReady, solanaReady, authenticated, ready])
@@ -217,12 +220,12 @@ export function ChatPanel({
               <CopyableWalletAddress
                 walletAddress={evmAddress}
                 className="justify-center"
-                walletAddressIntroText="🎉 Congrats! Your delegated wallets have been successfully created. EVM wallet address:"
+                walletAddressIntroText="🎉 Congrats! Your wallets have been successfully created. EVM wallet address:"
               />
               <CopyableWalletAddress
                 walletAddress={solAddress}
                 className="justify-center"
-                walletAddressIntroText="Your delegated Solana wallet address:"
+                walletAddressIntroText="Your Solana wallet address:"
               />
             </div>
           )}
@@ -231,12 +234,12 @@ export function ChatPanel({
               <CopyableWalletAddress
                 walletAddress={evmAddress}
                 className="justify-center"
-                walletAddressIntroText="Your delegated EVM wallet address:"
+                walletAddressIntroText="Your EVM wallet address:"
               />
               <CopyableWalletAddress
                 walletAddress={solAddress}
                 className="justify-center"
-                walletAddressIntroText="Your delegated Solana wallet address:"
+                walletAddressIntroText="Your Solana wallet address:"
               />
             </div>
           )}
