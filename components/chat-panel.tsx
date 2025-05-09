@@ -18,6 +18,8 @@ import { SearchModeToggle } from './search-mode-toggle'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
 import { WelcomeMessage } from './welcome-messages'
+import { WalletWithMetadata, useHeadlessDelegatedActions, useWallets, useSolanaWallets } from '@privy-io/react-auth'
+
 interface ChatPanelProps {
   input: string
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -58,10 +60,12 @@ export function ChatPanel({
     authenticated,
     user
   )
+  const { wallets: evmWallets, ready: evmReady } = useWallets()
+  const { wallets: solanaWallets, ready: solanaReady } = useSolanaWallets()
   const [isNewUser, setIsNewUser] = useState(false)
-  const [walletAddress, setWalletAddress] = useState('')
+  const [ walletAddress, setWalletAddress ] = useState('')
   const { close: closeArtifact } = useArtifact()
-
+  const { delegateWallet } = useHeadlessDelegatedActions()
   // Generate a deterministic seed for welcome message based on date
   // This will change each day but remain consistent throughout the day
   const welcomeSeed = useRef(new Date().getDate()).current
@@ -124,8 +128,48 @@ export function ChatPanel({
       const isFirstLogin = now.getTime() - created.getTime() < 60_000
       setIsNewUser(isFirstLogin)
       setWalletAddress(user.wallet?.address || '')
+
+
     }
   }, [ready, authenticated, user])
+
+  useEffect(() => {
+    if (!ready) return
+    if (!authenticated) return
+    if (!user) return
+    if (!evmReady) return
+    if (!solanaReady) return
+    const created = new Date(user!.createdAt)
+    const now = new Date()
+
+    // e.g. consider "first login" if created < 2 minute ago
+    const isFirstLogin = now.getTime() - created.getTime() < 120_000
+    if (evmReady && solanaReady && isFirstLogin) {
+      const evmWallet = user.linkedAccounts.find((wallet) => {
+        if (wallet.type == 'wallet') {
+          return wallet.walletClientType === 'privy' && wallet.chainType === 'ethereum' && wallet.connectorType === 'embedded'
+        }
+      }) as WalletWithMetadata | undefined;
+      console.log("evmReady", evmReady)
+      console.log(evmWallets)
+      console.log('evmWallet in chat panel', evmWallet)
+
+      const solWallet = solanaWallets.find(
+        wallet => wallet.walletClientType === 'privy'
+      ) as WalletWithMetadata | undefined
+
+      if (evmWallet?.address) {
+
+        console.log('evmWallet delegated')
+        delegateWallet({ address: evmWallet.address, chainType: 'ethereum' })
+      }
+      if (solWallet?.address) {
+        console.log('solWallet delegated')
+        delegateWallet({ address: solWallet.address, chainType: 'solana' })
+      }
+    }
+  }, [evmReady, solanaReady, authenticated, ready])
+
 
   // Add scroll to bottom handler
   const handleScrollToBottom = () => {
@@ -173,12 +217,12 @@ export function ChatPanel({
               <CopyableWalletAddress
                 walletAddress={evmAddress}
                 className="justify-center"
-                walletAddressIntroText="🎉 Congrats! Your wallet has been successfully created. EVM wallet address:"
+                walletAddressIntroText="🎉 Congrats! Your delegated wallets have been successfully created. EVM wallet address:"
               />
               <CopyableWalletAddress
                 walletAddress={solAddress}
                 className="justify-center"
-                walletAddressIntroText="Your Solana wallet address:"
+                walletAddressIntroText="Your delegated Solana wallet address:"
               />
             </div>
           )}
@@ -187,12 +231,12 @@ export function ChatPanel({
               <CopyableWalletAddress
                 walletAddress={evmAddress}
                 className="justify-center"
-                walletAddressIntroText="Your EVM wallet address:"
+                walletAddressIntroText="Your delegated EVM wallet address:"
               />
               <CopyableWalletAddress
                 walletAddress={solAddress}
                 className="justify-center"
-                walletAddressIntroText="Your Solana wallet address:"
+                walletAddressIntroText="Your delegated Solana wallet address:"
               />
             </div>
           )}

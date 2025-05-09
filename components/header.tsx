@@ -2,17 +2,48 @@
 
 import { useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { usePrivy } from '@privy-io/react-auth'
+import {
+  useHeadlessDelegatedActions,
+  useLogin,
+  usePrivy,
+  WalletWithMetadata,
+  type LinkedAccountWithMetadata,
+  type User
+} from '@privy-io/react-auth'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 import GuestMenu from './guest-menu'
-import { IconLogo } from './ui/icons'
 import UserMenu from './user-menu'
 
 export const Header: React.FC = () => {
   const { open } = useSidebar()
   const { authenticated, ready } = usePrivy()
-  console.log('authenticated in header', authenticated)
-  console.log('ready in header', ready)
+  const router = useRouter()
+  const { login } = useLogin({
+    onError: async error => {
+      console.error('Error during login:', error)
+    },
+    onComplete: async (params: {
+      user: User
+      isNewUser: boolean
+      wasAlreadyAuthenticated: boolean
+      loginMethod: any | null
+      loginAccount: LinkedAccountWithMetadata | null
+    }) => {
+      try {
+
+        const { user, isNewUser } = params
+        console.log('Login complete in Header:', params)
+        router.push('/')
+        // if (solWallet?.delegated && solWallet.address) {
+        //   delegateWallet({ address: solWallet.address, chainType: 'solana' })
+        // }
+      } catch (error) {
+        console.error('Error during login onComplete in Header:', error)
+      }
+    }
+  })
+
 
   return (
     <header
@@ -30,7 +61,7 @@ export const Header: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        {(ready && authenticated) ? <UserMenu /> : <GuestMenu />}
+        {ready && authenticated ? <UserMenu /> : <GuestMenu login={login} />}
       </div>
     </header>
   )

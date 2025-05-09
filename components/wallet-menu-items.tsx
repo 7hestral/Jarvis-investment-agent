@@ -7,6 +7,7 @@ import {
     useSolanaWallets,
     useWallets,
     useDelegatedActions,
+    useHeadlessDelegatedActions,
     type WalletWithMetadata,
     type ConnectedSolanaWallet,
     type ConnectedWallet,
@@ -19,7 +20,7 @@ export function WalletMenuItems() {
   const { user, ready: userReady } = usePrivy()
   const router = useRouter()
   const { wallets: solanaWallets, ready: solanaReady } = useSolanaWallets()
-  const { delegateWallet, revokeWallets } = useDelegatedActions();
+  const { delegateWallet, revokeWallets } = useHeadlessDelegatedActions();
   const [solanaWalletToDelegate, setSolanaWalletToDelegate] = useState<ConnectedSolanaWallet | undefined>(undefined);
   const [solanaWalletAlreadyDelegated, setSolanaWalletAlreadyDelegated] = useState<boolean>(false);
   
