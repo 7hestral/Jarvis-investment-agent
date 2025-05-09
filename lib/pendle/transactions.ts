@@ -46,7 +46,7 @@ const BASE_URL = 'https://api-v2.pendle.finance/core/v1'
  * @param tokenIn Address of the input token
  * @param tokenOut Address of the output token
  * @param amountIn Amount of input token in wei
- * @param slippage Slippage tolerance (e.g., 0.01 for 1%)
+ * @param slippage Slippage tolerance (e.g., 1.0 for 100%)
  * @returns Promise with transaction data
  */
 export async function getSwapTransaction(
@@ -54,14 +54,24 @@ export async function getSwapTransaction(
   tokenIn: string,
   tokenOut: string,
   amountIn: string,
-  slippage: number = 0.01
+  slippage: number = 1.0
 ): Promise<any> {
   try {
-    // For ETH input, use WETH as tokenIn for API compatibility
-    const actualTokenIn = tokenIn === ETH_ADDRESS ? WETH_ADDRESS : tokenIn;
+    // Normalize token addresses by removing "1-" prefix if it exists
+    const normalizedTokenIn = tokenIn.startsWith('1-') ? tokenIn.substring(2) : tokenIn;
     
-    console.log(`Using market: ${marketAddress}`);
+    // For ETH input, use WETH as tokenIn for API compatibility
+    const actualTokenIn = normalizedTokenIn === ETH_ADDRESS ? WETH_ADDRESS : normalizedTokenIn;
+    
+    // Normalize market address by removing "1-" prefix if it exists
+    const normalizedMarketAddress = marketAddress.startsWith('1-') 
+      ? marketAddress.substring(2) 
+      : marketAddress;
+    
+    console.log(`Using market: ${normalizedMarketAddress}`);
     console.log(`Swapping from ${actualTokenIn} to ${tokenOut}`);
+    console.log(`Token addresses - Original: tokenIn=${tokenIn}, tokenOut=${tokenOut}`);
+    console.log(`Token addresses - Actual: tokenIn=${actualTokenIn}, tokenOut=${tokenOut}`);
     
     // Use environment variable for receiver address, error if not set
     if (!process.env.WALLET_ADDRESS) {
@@ -70,12 +80,15 @@ export async function getSwapTransaction(
     const RECEIVER = process.env.WALLET_ADDRESS;
     
     // Use v2 API for swap
-    const url = `${BASE_URL}/sdk/1/markets/${marketAddress}/swap`;
+    const url = `${BASE_URL}/sdk/1/markets/${normalizedMarketAddress}/swap`;
+    
+    // Normalize tokenOut by removing "1-" prefix if it exists
+    const normalizedTokenOut = tokenOut.startsWith('1-') ? tokenOut.substring(2) : tokenOut;
     
     console.log("API URL:", url);
     console.log("Payload:", {
       tokenIn: actualTokenIn,
-      tokenOut,
+      tokenOut: normalizedTokenOut,
       amountIn,
       slippage,
       receiver: RECEIVER,
@@ -85,7 +98,7 @@ export async function getSwapTransaction(
     const response = await axios.get(url, {
       params: {
         tokenIn: actualTokenIn,
-        tokenOut,
+        tokenOut: normalizedTokenOut,
         amountIn,
         slippage,
         receiver: RECEIVER,
@@ -118,7 +131,7 @@ export async function getSwapTransaction(
  * @param tokenIn Address of the input token
  * @param tokenOut Address of the output token
  * @param amountIn Amount of input token
- * @param slippage Slippage tolerance (e.g., 0.01 for 1%)
+ * @param slippage Slippage tolerance (e.g., 1.0 for 100%)
  * @returns Promise with transaction result
  */
 export async function swap(
@@ -126,7 +139,7 @@ export async function swap(
   tokenIn: string,
   tokenOut: string,
   amountIn: string,
-  slippage: number = 0.01
+  slippage: number = 1.0
 ): Promise<SwapResponse> {
   try {
     console.log(`Preparing swap for market ${market.name}`);

@@ -22,6 +22,8 @@ export interface FormattedQuote {
 
 // Native ETH is represented by the zero address in the Pendle API
 const ETH_ADDRESS = "0x0000000000000000000000000000000000000000"
+// WETH address for API compatibility
+const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
 
 // API base URL
 const BASE_URL = 'https://api-v2.pendle.finance/core/v1'
@@ -48,6 +50,14 @@ export async function getQuote(
     // Handle both market object and market address string
     const marketAddress = typeof market === 'string' ? market : market.address;
     
+    // Normalize market address by removing "1-" prefix if it exists
+    const normalizedMarketAddress = marketAddress.startsWith('1-') 
+      ? marketAddress.substring(2) 
+      : marketAddress;
+    
+    console.log(`[Quotes] Original market address: ${marketAddress}`);
+    console.log(`[Quotes] Normalized market address: ${normalizedMarketAddress}`);
+    
     // Use the provided market name directly - this should already include PT/YT prefix
     const displayName = marketName || 'Unknown Market';
     
@@ -66,19 +76,27 @@ export async function getQuote(
     const RECEIVER = process.env.WALLET_ADDRESS;
     
     // Format the URL
-    const url = `${BASE_URL}/sdk/${chainId}/markets/${marketAddress}/swap`;
+    const url = `${BASE_URL}/sdk/${chainId}/markets/${normalizedMarketAddress}/swap`;
+    
+    // Normalize tokenOut by removing "1-" prefix if it exists
+    const normalizedTokenOut = tokenOut.startsWith('1-') ? tokenOut.substring(2) : tokenOut;
+    
+    console.log(`[Quotes] Original tokenOut address: ${tokenOut}`);
+    console.log(`[Quotes] Normalized tokenOut address: ${normalizedTokenOut}`);
     
     // Create params object
     const params = {
-      tokenIn: ETH_ADDRESS,
-      tokenOut: tokenOut,
+      tokenIn: WETH_ADDRESS,
+      tokenOut: normalizedTokenOut,
       amountIn: amountInWei,
-      slippage: 0.01,
+      slippage: 1.0,
       receiver: RECEIVER,
       enableAggregator: true,
       chainId: chainId,
-      market: marketAddress
+      market: normalizedMarketAddress
     };
+    
+    console.log("[Quotes] Making request with params:", JSON.stringify(params, null, 2));
     
     // Make API request with a timeout of 15 seconds
     const response = await axios.get(url, { 

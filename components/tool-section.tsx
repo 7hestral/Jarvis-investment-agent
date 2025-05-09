@@ -1,7 +1,9 @@
 'use client'
 
+import { ExtendedCoreMessage } from '@/lib/types'
 import { ToolInvocation } from 'ai'
 import { PendleOpportunitiesSection } from './pendle-opportunities-section'
+import { PendleSwapSection } from './pendle-swap-section'
 import { QuestionConfirmation } from './question-confirmation'
 import RetrieveSection from './retrieve-section'
 import { SearchSection } from './search-section'
@@ -14,13 +16,17 @@ interface ToolSectionProps {
   isOpen: boolean
   onOpenChange: (open: boolean) => void
   addToolResult?: (params: { toolCallId: string; result: any }) => void
+  message?: ExtendedCoreMessage
+  i?: number
 }
 
 export function ToolSection({
   tool,
   isOpen,
   onOpenChange,
-  addToolResult
+  addToolResult,
+  message,
+  i
 }: ToolSectionProps) {
   // Special handling for ask_question tool
   if (tool.toolName === 'ask_question') {
@@ -54,6 +60,30 @@ export function ToolSection({
           onConfirm={() => {}} // Not used in result display mode
         />
       )
+    }
+  }
+
+  // Handle tool call data
+  if (message && message.role === 'data' && typeof message.content === 'object' && message.content && 
+      // @ts-ignore - we know these exist based on the structure
+      message.content.type === 'tool_call') {
+    // @ts-ignore - we know these exist
+    const toolName = message.content.data.toolName
+    // @ts-ignore
+    let toolResult = JSON.parse(message.content.data.result || '{}')
+
+    // Return the appropriate component based on tool name
+    if (toolName === 'search') {
+      // @ts-ignore - this is handled correctly in the component
+      return <SearchSection results={toolResult} />
+    } else if (toolName === 'pendle_opportunities') {
+      // @ts-ignore - this is handled correctly in the component
+      return <PendleOpportunitiesSection opportunities={toolResult} />
+    } else if (toolName === 'wallet_balance') {
+      // @ts-ignore - this is handled correctly in the component
+      return <WalletBalanceSection balances={toolResult} />
+    } else if (toolName === 'pendle_swap') {
+      return <PendleSwapSection swapResult={toolResult} />
     }
   }
 
@@ -101,13 +131,21 @@ export function ToolSection({
           </div>
         </div>
       )
-    case 'wallet_balance':
+    case 'pendle_swap':
+      // Parse the result data safely
+      const swapResult = tool.state === 'result' 
+        ? (typeof tool.result === 'string' ? JSON.parse(tool.result) : tool.result)
+        : { status: 'pending' };
+        
       return (
-        <WalletBalanceSection
-          tool={tool}
-          isOpen={isOpen}
-          onOpenChange={onOpenChange}
-        />
+        <div className="flex flex-col space-y-4 py-4">
+          <div className="flex flex-col">
+            <h3 className="text-base font-medium">Pendle Swap Transaction</h3>
+            <div className="mt-2">
+              <PendleSwapSection swapResult={swapResult} />
+            </div>
+          </div>
+        </div>
       )
     default:
       return null
