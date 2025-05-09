@@ -17,6 +17,17 @@ async function verifyToken() {
   return await result.json();
 }
 
+async function signMessage() {
+    const url = '/api/delegated-transact'
+    const accessToken = await getAccessToken();
+    const result = await fetch(url, {
+        headers: {
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined),
+        },
+    });
+    return await result.json();
+}
+
 export default function DashboardPage() {
   const [verifyResult, setVerifyResult] = useState();
   const router = useRouter();
@@ -205,6 +216,12 @@ export default function DashboardPage() {
                 Verify token on server
               </button>
 
+              <button
+                onClick={() => signMessage().then(setVerifyResult)}
+                className="text-sm bg-violet-600 hover:bg-violet-700 py-2 px-4 rounded-md text-white border-none"
+              >
+                Send delegated transaction 
+              </button>
               {Boolean(verifyResult) && (
                 <details className="w-full">
                   <summary className="mt-6 font-bold uppercase text-sm text-gray-600">

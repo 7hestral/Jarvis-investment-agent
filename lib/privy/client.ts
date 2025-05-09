@@ -1,16 +1,17 @@
 // lib/privy.ts
 import { AuthTokenClaims, LinkedAccountWithMetadata, PrivyClient, User, WalletWithMetadata } from '@privy-io/server-auth'
 import { cookies } from 'next/headers'
+import Privy from '@privy-io/js-sdk-core'
 
 const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID!
 const appSecret = process.env.PRIVY_APP_SECRET!
 
 export const privy = new PrivyClient(appId, appSecret, 
-// {
-//   walletApi: {
-//     authorizationPrivateKey: process.env.PRIVY_SIGNING_KEY,
-//   },
-// }
+{
+  walletApi: {
+    authorizationPrivateKey: process.env.PRIVY_SIGNING_KEY,
+  },
+}
 )
 
 export async function verifyAccessToken(): Promise<AuthTokenClaims> {
@@ -95,7 +96,7 @@ export async function getUserWallet(
     if (acc.type === 'wallet') {
       return (
         acc.chainType === chainType &&
-        acc.address)
+        acc.address && acc.walletClientType === 'privy')
     }
     return false
   })
