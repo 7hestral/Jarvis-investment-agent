@@ -88,7 +88,7 @@ export async function getUserEvmWalletAddress(
 }
 
 export async function getUserWallet(
-  chainType: string
+  chainType: 'solana' | 'ethereum'
 ): Promise<WalletWithMetadata | undefined> {
   const user = await getUser()
   const walletAccount = user?.linkedAccounts?.find(acc => {

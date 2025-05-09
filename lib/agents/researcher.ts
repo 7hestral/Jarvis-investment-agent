@@ -6,6 +6,7 @@ import { createSearchTool } from '../tools/search'
 import { createVideoSearchTool } from '../tools/video-search'
 import { walletBalanceTool } from '../tools/wallet'
 import { getModel } from '../utils/registry'
+import { WalletWithMetadata } from '@privy-io/server-auth'
 
 const SYSTEM_PROMPT = `
 Instructions:
@@ -76,11 +77,15 @@ type ResearcherReturn = Parameters<typeof streamText>[0]
 export function researcher({
   messages,
   model,
-  searchMode
+  searchMode,
+  userEvmWallet,
+  userSolWallet
 }: {
   messages: CoreMessage[]
   model: string
   searchMode: boolean
+  userEvmWallet: WalletWithMetadata | undefined
+  userSolWallet: WalletWithMetadata | undefined
 }): ResearcherReturn {
   console.log('searchMode', searchMode)
   try {
@@ -91,9 +96,15 @@ export function researcher({
     const videoSearchTool = createVideoSearchTool(model)
     const askQuestionTool = createQuestionTool(model)
 
+    const userWalletInfo = `
+    User EVM wallet address: ${userEvmWallet?.address}, delegated status: ${userEvmWallet?.delegated}
+    User Solana wallet address: ${userSolWallet?.address}, delegated status: ${userSolWallet?.delegated}
+    You can only execute on behalf of the user if they have delegated you access to their wallet.
+    `
+
     return {
       model: getModel(model),
-      system: `${SYSTEM_PROMPT}\nCurrent date and time: ${currentDate}`,
+      system: `${SYSTEM_PROMPT}\nCurrent date and time: ${currentDate}\n${userWalletInfo}`,
       messages,
       temperature: 0.1,
       tools: {

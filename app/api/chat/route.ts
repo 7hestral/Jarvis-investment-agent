@@ -3,7 +3,7 @@ import { createToolCallingStreamResponse } from '@/lib/streaming/create-tool-cal
 import { Model } from '@/lib/types/models'
 import { isProviderEnabled } from '@/lib/utils/registry'
 import { cookies } from 'next/headers'
-
+import { getUserWallet } from '@/lib/privy/client'
 export const maxDuration = 30
 
 const DEFAULT_MODEL: Model = {
@@ -56,6 +56,10 @@ export async function POST(request: Request) {
       )
     }
 
+    const userEvmWallet = await getUserWallet('ethereum')
+    const userSolWallet = await getUserWallet('solana')
+
+
     const supportsToolCalling = selectedModel.toolCallType === 'native'
     console.log('supportsToolCalling', supportsToolCalling)
     return supportsToolCalling
@@ -64,14 +68,18 @@ export async function POST(request: Request) {
           model: selectedModel,
           chatId,
           searchMode,
-          userId
+          userId,
+          userEvmWallet,
+          userSolWallet
         })
       : createManualToolStreamResponse({
           messages,
           model: selectedModel,
           chatId,
           searchMode,
-          userId
+          userId,
+          userEvmWallet,
+          userSolWallet
         })
   } catch (error) {
     console.error('API route error:', error)

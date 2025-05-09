@@ -118,7 +118,6 @@ export async function getWalletBalances(
 ): Promise<WalletBalanceResult> {
   // Use provided wallet address or environment variable
   const walletAddress = walletAddressParam || process.env.WALLET_ADDRESS;
-  
   if (!walletAddress) {
     throw new Error("No wallet address provided and WALLET_ADDRESS environment variable is not set.");
   }
