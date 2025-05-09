@@ -1,11 +1,17 @@
 // lib/privy.ts
-import { AuthTokenClaims, PrivyClient, User } from '@privy-io/server-auth'
+import { AuthTokenClaims, LinkedAccountWithMetadata, PrivyClient, User, WalletWithMetadata } from '@privy-io/server-auth'
 import { cookies } from 'next/headers'
 
 const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID!
 const appSecret = process.env.PRIVY_APP_SECRET!
 
-export const privy = new PrivyClient(appId, appSecret)
+export const privy = new PrivyClient(appId, appSecret, 
+// {
+//   walletApi: {
+//     authorizationPrivateKey: process.env.PRIVY_SIGNING_KEY,
+//   },
+// }
+)
 
 export async function verifyAccessToken(): Promise<AuthTokenClaims> {
   const cookieStore = await cookies()
@@ -19,20 +25,32 @@ export async function verifyAccessToken(): Promise<AuthTokenClaims> {
 // Return user data in an identity token has to be turned on in the Privy dashboard
 export async function getUser(): Promise<User> {
   const cookieStore = await cookies()
-  const idToken = cookieStore.get("privy-id-token")?.value
-  if (!idToken) {
-    // throw new Error("No token found")
-    // Fall back to auth token
-    const token = cookieStore.get("privy-token")?.value
-    if (!token) {
-      throw new Error("No token found")
-    }
-    const user = await privy.getUser(token)
-    return user
-  } else {
-    const user = await privy.getUser({ idToken: idToken })
-    return user
+  // const idToken = cookieStore.get("privy-id-token")?.value
+  // if (!idToken) {
+  //   // throw new Error("No token found")
+  //   // Fall back to auth token
+  //   const token = cookieStore.get("privy-token")?.value
+  //   if (!token) {
+  //     throw new Error("No token found")
+  //   }
+  //   const claims = await privy.verifyAuthToken(token)
+  //   const user = await privy.getUserById(claims.userId)
+
+
+  //   return user
+  // } else {
+  //   const user = await privy.getUser({ idToken: idToken })
+  //   return user
+  // }
+
+  // default to the auth token
+  const token = cookieStore.get("privy-token")?.value
+  if (!token) {
+    throw new Error("No token found")
   }
+  const claims = await privy.verifyAuthToken(token)
+  const user = await privy.getUserById(claims.userId)
+  return user
 }
 
 export async function getUserId(): Promise<string> {
@@ -56,19 +74,22 @@ export async function getUserSolWalletAddress(
   
 ): Promise<string | undefined> {
 
-  return getUserWalletAddress('solana')
+  const walletAccount = await getUserWallet('solana')
+  return walletAccount?.address
 }
 
 export async function getUserEvmWalletAddress(
   
 ): Promise<string | undefined> {
 
-  return getUserWalletAddress('ethereum')
+  const walletAccount = await getUserWallet('ethereum')
+
+  return walletAccount?.address
 }
 
-export async function getUserWalletAddress(
+export async function getUserWallet(
   chainType: string
-): Promise<string | undefined> {
+): Promise<WalletWithMetadata | undefined> {
   const user = await getUser()
   const walletAccount = user?.linkedAccounts?.find(acc => {
     if (acc.type === 'wallet') {
@@ -80,9 +101,9 @@ export async function getUserWalletAddress(
   })
 
   if (walletAccount && walletAccount.type === 'wallet') {
-    if (walletAccount.address) {
-      return walletAccount.address
-    }
+
+    return walletAccount
+
   }
   return undefined
 }

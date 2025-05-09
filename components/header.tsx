@@ -24,8 +24,8 @@ export const Header: React.FC = () => {
     >
       <div className="flex items-center space-x-4">
         <a href="/">
-          <IconLogo className={cn('w-5 h-5')} />
-          <span className="sr-only">Morphic</span>
+          {/* <IconLogo className={cn('w-5 h-5')} /> */}
+          <span className="sr-only">Jarvis</span>
         </a>
       </div>
 
