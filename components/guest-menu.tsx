@@ -11,19 +11,18 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { toast } from 'sonner'
 import type { LinkedAccountWithMetadata, User } from '@privy-io/react-auth'
 import { getAccessToken, useLogin, usePrivy, useFundWallet } from '@privy-io/react-auth'
 import {
   Link2,
   LogIn,
   Palette,
-  Settings2 // Or EllipsisVertical, etc.
+  Settings2
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'
-import { useEffect } from 'react'
 import { getWalletAddresses } from './useEvmAndSolAddresses'
 import { sepolia } from 'viem/chains'
 import { useFundWallet as useSolanaFundWallet } from '@privy-io/react-auth/solana';

@@ -1,6 +1,5 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,12 +11,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { Link2, LogOut, Palette, Settings2 } from 'lucide-react'
+import { usePrivy } from '@privy-io/react-auth'
+import { Link2, LogOut, Palette, Settings2, Wallet } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'
 import { Button } from './ui/button'
-import { usePrivy } from '@privy-io/react-auth'
 
 
 
@@ -69,6 +68,10 @@ export default function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => router.push('/wallet')}>
+          <Wallet className="mr-2 h-4 w-4" />
+          <span>Wallet</span>
+        </DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <Palette className="mr-2 h-4 w-4" />
