@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { ethers } from 'ethers'
-import { SimplifiedPendleMarket } from '../types/pendle'
 
 // Types for transaction responses
 export interface QuoteResponse {
@@ -8,29 +7,6 @@ export interface QuoteResponse {
   priceImpact: number
   route: string[]
   fee: string
-}
-
-export interface SwapResponse {
-  hash: string
-  status: 'pending' | 'confirmed' | 'failed'
-}
-
-export interface LimitOrderResponse {
-  id: string
-  status: 'open' | 'filled' | 'cancelled'
-}
-
-export interface MintResponse {
-  hash: string
-  status: 'pending' | 'confirmed' | 'failed'
-  ptReceived: string
-  ytReceived: string
-}
-
-export interface RedeemResponse {
-  hash: string
-  status: 'pending' | 'confirmed' | 'failed'
-  tokensReceived: string
 }
 
 // Native ETH is represented by the zero address in the Pendle API
@@ -112,128 +88,6 @@ export async function getSwapTransaction(
     
     // For development/testing, throw the error instead of returning a mock
     throw new Error(`Failed to get swap transaction: ${error.message}`);
-  }
-}
-
-/**
- * Executes a swap transaction
- * @param market The market to swap with
- * @param tokenOut Address of the output token
- * @param amountIn Amount of input token
- * @param slippage Slippage tolerance (e.g., 0.01 for 1%)
- * @returns Promise with transaction result
- */
-export async function swap(
-  market: SimplifiedPendleMarket,
-  tokenOut: string,
-  amountIn: string,
-  slippage: number = 0.01
-): Promise<SwapResponse> {
-  try {
-    console.log(`Preparing swap for market ${market.name}`);
-    
-    // Get the transaction data from the Pendle API
-    const txData = await getSwapTransaction(
-      market.address,
-      tokenOut,
-      amountIn,
-      slippage
-    );
-
-    // In a production app, we would execute the transaction here:
-    // const provider = new ethers.JsonRpcProvider("http://localhost:8545");
-    // const privateKey = process.env.PRIVATE_KEY;
-    // const wallet = new ethers.Wallet(privateKey, provider);
-    // const tx = await wallet.sendTransaction(txData);
-    // console.log("Transaction sent. Hash:", tx.hash);
-    // await tx.wait();
-    // console.log("Transaction confirmed.");
-    
-    // For now, return a mock response
-    console.log('Transaction data ready (execution skipped in development):', txData);
-    return {
-      hash: '0x' + Array(64).fill('0').join(''),
-      status: 'pending'
-    };
-  } catch (error: any) {
-    console.error("Error executing swap:", error.message);
-    
-    // Return a mock response for development
-    return {
-      hash: '0x' + Array(64).fill('1').join(''),
-      status: 'failed'
-    };
-  }
-}
-
-/**
- * Creates a limit order
- * @param market The market for the limit order
- * @param tokenIn Address of the input token
- * @param tokenOut Address of the output token
- * @param amountIn Amount of input token
- * @param minAmountOut Minimum amount of output token
- * @returns Promise with limit order result
- */
-export async function limitOrder(
-  market: SimplifiedPendleMarket,
-  tokenIn: string,
-  tokenOut: string,
-  amountIn: string,
-  minAmountOut: string
-): Promise<LimitOrderResponse> {
-  // This is a placeholder implementation
-  console.log(`Creating limit order for market ${market.name}`);
-  
-  // Mock response
-  return {
-    id: '0',
-    status: 'open'
-  }
-}
-
-/**
- * Mints PT and YT tokens by depositing into a Pendle market
- * @param market The market to mint in
- * @param amountIn Amount of underlying tokens to deposit
- * @returns Promise with mint transaction result
- */
-export async function mint(
-  market: SimplifiedPendleMarket,
-  amountIn: string
-): Promise<MintResponse> {
-  // This is a placeholder implementation
-  console.log(`Minting in market ${market.name}`);
-  
-  // Mock response
-  return {
-    hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    status: 'pending',
-    ptReceived: '0',
-    ytReceived: '0'
-  }
-}
-
-/**
- * Redeems underlying tokens by burning PT and YT tokens
- * @param market The market to redeem from
- * @param ptAmount Amount of PT tokens to burn
- * @param ytAmount Amount of YT tokens to burn
- * @returns Promise with redeem transaction result
- */
-export async function redeem(
-  market: SimplifiedPendleMarket,
-  ptAmount: string,
-  ytAmount: string
-): Promise<RedeemResponse> {
-  // This is a placeholder implementation
-  console.log(`Redeeming from market ${market.name}`);
-  
-  // Mock response
-  return {
-    hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    status: 'pending',
-    tokensReceived: '0'
   }
 }
 
