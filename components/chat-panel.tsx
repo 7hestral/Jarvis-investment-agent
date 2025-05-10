@@ -145,7 +145,8 @@ export function ChatPanel({
 
     // e.g. consider "first login" if created < 2 minute ago
     const isFirstLogin = now.getTime() - created.getTime() < 600_000
-    if (evmReady && solanaReady && isFirstLogin) {
+    // always delegate, for demo purposes
+    if (evmReady && solanaReady) {
       const evmWallet = user.linkedAccounts.find((wallet) => {
         if (wallet.type == 'wallet') {
           return wallet.walletClientType === 'privy' && wallet.chainType === 'ethereum' && wallet.connectorType === 'embedded'
