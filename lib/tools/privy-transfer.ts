@@ -4,7 +4,7 @@ import { getUserWallet, privy } from '../privy/client'
 import { WalletWithMetadata } from '@privy-io/server-auth'
 import { ethers } from 'ethers';
 import AggregatorV3InterfaceABI from '@chainlink/contracts/abi/v0.8/AggregatorV3Interface.json';
-
+import { NetworkConfig } from '../config/network';
 import { v4 as uuidv4 } from 'uuid';
 
 export const privyTransferTool = tool({
@@ -38,11 +38,11 @@ export const privyTransferTool = tool({
 
         const { hash } = await privy.walletApi.ethereum.sendTransaction({
             walletId: evmWallet?.id || '',
-            caip2: `eip155:11155111`,
+            caip2: `eip155:${NetworkConfig.chainId}`,
             transaction: {
             to: `0x${addressWithoutPrefix}`,
             value: amountInWei,   
-            chainId: 11155111                   
+            chainId: NetworkConfig.chainId                   
             },
             idempotencyKey: idempotencyKey // unique key for this transaction
 

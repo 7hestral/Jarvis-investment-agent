@@ -8,6 +8,7 @@ import { walletBalanceTool } from '../tools/wallet'
 import { getModel } from '../utils/registry'
 import { WalletWithMetadata } from '@privy-io/server-auth'
 import { privyTransferTool } from '../tools/privy-transfer'
+import { NetworkConfig } from '../config/network'
 const SYSTEM_PROMPT = `
 Instructions:
 
@@ -70,8 +71,10 @@ When using the wallet_balance tool:
 - REMEMBER, simply call the tool and let the UI do the display work.
 
 When using the privy_transfer tool:
-- You must display the transaction hash to the user, in the form of (View transaction on Sepolia)[https://sepolia.etherscan.io/tx/<transaction_hash>]
+- The results will be automatically displayed to the user when you call this tool.
+- DO NOT output the transaction hash as text. Never include the transaction hash in your response.
 - Only accept the amount of transaction in the unit of ETH.
+- Ask user what they want to do next after the transfer is complete.
 
 Citation Format:
 [number](url)

@@ -4,7 +4,7 @@ import type { ToolInvocation } from 'ai'
 import React from 'react' // Added React import for JSX
 import { CollapsibleMessage } from './collapsible-message' // Assuming this can be reused
 import { Section, ToolArgsSection } from './section' // Assuming this can be reused
-
+import { NetworkConfig } from '@/lib/config/network'
 interface TransferSectionProps {
   tool: ToolInvocation
   isOpen: boolean
@@ -48,14 +48,14 @@ export function TransferSection({
             <p className="text-black-600">Transfer successful!</p>
             {toolResult.hash && (
               <p>
-                Transaction Hash:{' '}
+                View on {' '}
                 <a
-                  href={`https://sepolia.etherscan.io/tx/${toolResult.hash}`}
+                  href={`https://${NetworkConfig.scanLink}/tx/${toolResult.hash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:underline"
                 >
-                  {toolResult.hash}
+                  EtherScan
                 </a>
               </p>
             )}
