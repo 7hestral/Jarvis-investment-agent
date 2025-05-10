@@ -78,9 +78,11 @@ export const pendleSwapTool = tool({
     amount_in_eth: z.string()
       .describe('Amount of ETH to swap (in ETH units, e.g. "1" for 1 ETH)'),
     slippage: z.number().min(0.001).max(0.1).default(0.01)
-      .describe('Maximum acceptable slippage (default: 0.01 which is 1%)')
+      .describe('Maximum acceptable slippage (default: 0.01 which is 1%)'),
+    token_name: z.string().optional()
+      .describe('The name of the token to receive (e.g. "PT weETH")')
   }),
-  execute: async ({ market_address, token_out_address, amount_in_eth, slippage = 0.01 }) => {
+  execute: async ({ market_address, token_out_address, amount_in_eth, slippage = 0.01, token_name }) => {
     try {
       // Convert ETH amount to wei
       let amountInWei;
@@ -101,14 +103,19 @@ export const pendleSwapTool = tool({
       // Execute the transaction
       const result = await executeSwapTransaction(txData);
       
+      // Determine token type (PT or YT) from the token_out_address
+      const isYT = token_out_address.toLowerCase().includes('yt');
+      
+      // Use provided token name or generate a generic one
+      const tokenDisplay = token_name || (isYT ? 'YT Token' : 'PT Token');
+      
       // Return a clean response object
       return {
         success: true,
         transaction_hash: result.hash,
-        // status: result.status,
         swap_details: {
           from: "ETH",
-          to: "Pendle Token",
+          to: tokenDisplay,
           amount: amount_in_eth + " ETH",
           market: market_address
         }
