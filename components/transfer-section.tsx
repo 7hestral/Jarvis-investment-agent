@@ -1,6 +1,7 @@
 'use client'
 
 import type { ToolInvocation } from 'ai'
+import React from 'react' // Added React import for JSX
 import { CollapsibleMessage } from './collapsible-message' // Assuming this can be reused
 import { Section, ToolArgsSection } from './section' // Assuming this can be reused
 
@@ -32,27 +33,51 @@ export function TransferSection({
     <ToolArgsSection tool="transfer">{`Transfer to ${args.address} for ${args.amount} ETH`}</ToolArgsSection>
   )
 
-  let statusMessage = ''
+  let statusDisplay: React.ReactNode = null // Changed to React.ReactNode
 
   switch (tool.state) {
     case 'call':
-      statusMessage = 'Transfer in progress...'
+      statusDisplay = <p>Transfer in progress...</p>
       break
     case 'result':
       const toolResult = tool.result as PrivyTransferResult
-      console.log(toolResult)
+      console.log(toolResult) // Keep console.log as it was there
       if (toolResult.status === 'success' || toolResult.hash) {
-        statusMessage = `\n
-        Transfer successful! \n
-        Transaction Hash: ${toolResult.hash}`
+        statusDisplay = (
+          <div>
+            <p className="text-black-600">Transfer successful!</p>
+            {toolResult.hash && (
+              <p>
+                Transaction Hash:{' '}
+                <a
+                  href={`https://sepolia.etherscan.io/tx/${toolResult.hash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  {toolResult.hash}
+                </a>
+              </p>
+            )}
+          </div>
+        )
       } else {
-        statusMessage = `\nTransfer failed: ${JSON.stringify(
-          toolResult.error_message
-        )}`
+        // status === 'fail'
+        statusDisplay = (
+          <div>
+            <p className="text-red-600">Transfer failed:</p>
+            <pre className="whitespace-pre-wrap">
+              {typeof toolResult.error_message === 'string'
+                ? toolResult.error_message
+                : JSON.stringify(toolResult.error_message, null, 2)}
+            </pre>
+          </div>
+        )
       }
       break
     default:
-      statusMessage = `Status: ${tool.state}`
+      // Display the raw state if it's not 'call' or 'result'
+      statusDisplay = <p>Status: {tool.state}</p>
       break
   }
 
@@ -63,9 +88,9 @@ export function TransferSection({
       header={header}
       isOpen={isOpen}
       onOpenChange={onOpenChange}
-      showIcon={true} // Assuming we want an icon
+      showIcon={false} // Assuming we want an icon
     >
-      {statusMessage && <Section title="Transaction">{statusMessage}</Section>}
+      {statusDisplay && <Section title="Transaction">{statusDisplay}</Section>}
     </CollapsibleMessage>
   )
 }
