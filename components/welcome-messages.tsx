@@ -1,9 +1,9 @@
 // Array of welcome messages to display
 const welcomeMessages = [
-  'Which yield opportunity should we open first with your crypto wallet?',
-  "Let's maximize your crypto potential",
-  'Your crypto wallet is the key; which opportunity should we open first?',
-  'Your crypto, amplified'
+  'Maximize your yield potential!',
+  "Global opportunities in your wallet!",
+  'Amplify your crypto experience!',
+  'Unlock endless opportunities with your wallet!'
 ]
 
 // Get a message by index or seed

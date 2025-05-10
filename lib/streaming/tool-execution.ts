@@ -225,7 +225,7 @@ export async function executeToolCall(
       ('wallet_address' in toolParams || 'token_symbol' in toolParams || Object.keys(toolParams).length === 0)
     ) {
       toolResults = await walletBalanceTool.execute(
-        toolParams as { wallet_address?: string; token_symbol?: string },
+        toolParams as { wallet_address: string; token_symbol?: string },
         { toolCallId: 'wallet_balance', messages: [] }
       )
     } else {

@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-
+import { getUserEvmWalletAddress } from '../privy/client'
 // ERC20 standard interface
 const ERC20_ABI = [
   "function balanceOf(address) view returns (uint256)",
@@ -114,12 +114,12 @@ async function discoverTokens(walletAddress: string, provider: ethers.JsonRpcPro
 // Main function to get all token balances
 export async function getWalletBalances(
   walletAddressParam?: string,
-  rpcUrl: string = "http://localhost:8545"
+  rpcUrl: string = process.env.ETH_RPC_URL || 'http://127.0.0.1:8545'
 ): Promise<WalletBalanceResult> {
   // Use provided wallet address or environment variable
-  const walletAddress = walletAddressParam || process.env.WALLET_ADDRESS;
+  const walletAddress = walletAddressParam || await getUserEvmWalletAddress();
   if (!walletAddress) {
-    throw new Error("No wallet address provided and WALLET_ADDRESS environment variable is not set.");
+    throw new Error("No wallet address provided and user does not have EVM wallet.");
   }
   
   const provider = new ethers.JsonRpcProvider(rpcUrl);

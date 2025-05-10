@@ -5,8 +5,8 @@ import { getWalletBalances } from '../utils/wallet'
 export const walletBalanceTool = tool({
   description: 'Get wallet balance information for all tokens or a specific token.',
   parameters: z.object({
-    wallet_address: z.string().optional()
-      .describe('Specific wallet address to check (optional, defaults to the primary wallet)'),
+    wallet_address: z.string()
+      .describe('Specific EVM wallet address to check'),
     token_symbol: z.string().optional()
       .describe('Specific token symbol to filter by (e.g., "ETH", "DAI", etc.)')
   }),
