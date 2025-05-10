@@ -136,7 +136,7 @@ export function researcher({
         privy_transfer: privyTransferTool
       },
       experimental_activeTools: searchMode
-        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'pendle_opportunities', 'pendle_quote', 'pendle_swap', 'wallet_balance' 'privy_transfer']
+        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'pendle_opportunities', 'pendle_quote', 'pendle_swap', 'wallet_balance', 'privy_transfer']
         : ['wallet_balance', 'privy_transfer','pendle_opportunities', 'pendle_quote', 'pendle_swap'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()
