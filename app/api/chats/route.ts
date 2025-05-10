@@ -1,7 +1,7 @@
 import { getChatsPage } from '@/lib/actions/chat'
+import { privy } from '@/lib/privy/client'
 import { type Chat } from '@/lib/types'
 import { NextRequest, NextResponse } from 'next/server'
-import { privy } from '@/lib/privy/verify-access-token'
 
 interface ChatPageResponse {
   chats: Chat[]

@@ -2,17 +2,60 @@
 
 import { useSidebar } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { usePrivy } from '@privy-io/react-auth'
-import React from 'react'
+import {
+  useHeadlessDelegatedActions,
+  useLogin,
+  usePrivy,
+  WalletWithMetadata,
+  type LinkedAccountWithMetadata,
+  type User
+} from '@privy-io/react-auth'
+import { useRouter } from 'next/navigation'
+import React, { useState } from 'react'
 import GuestMenu from './guest-menu'
-import { IconLogo } from './ui/icons'
 import UserMenu from './user-menu'
+import WelcomePopup from './welcome-popup'
 
 export const Header: React.FC = () => {
   const { open } = useSidebar()
   const { authenticated, ready } = usePrivy()
-  console.log('authenticated in header', authenticated)
-  console.log('ready in header', ready)
+  const router = useRouter()
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false)
+  const handleCloseWelcomePopup = () => {
+    setShowWelcomePopup(false)
+    router.push('/')
+  }
+  const { login } = useLogin({
+    onError: async error => {
+      console.error('Error during login:', error)
+    },
+    onComplete: async (params: {
+      user: User
+      isNewUser: boolean
+      wasAlreadyAuthenticated: boolean
+      loginMethod: any | null
+      loginAccount: LinkedAccountWithMetadata | null
+    }) => {
+      try {
+
+        const { user, isNewUser } = params
+        console.log('Login complete in Header:', params)
+
+
+        // if (isNewUser) {
+        //   setShowWelcomePopup(true)
+        // }
+        // always show welcome popup, for demo purposes
+        setShowWelcomePopup(true)
+        // if (solWallet?.delegated && solWallet.address) {
+        //   delegateWallet({ address: solWallet.address, chainType: 'solana' })
+        // }
+      } catch (error) {
+        console.error('Error during login onComplete in Header:', error)
+      }
+    }
+  })
+
 
   return (
     <header
@@ -22,15 +65,16 @@ export const Header: React.FC = () => {
         'w-full'
       )}
     >
+      <WelcomePopup open={showWelcomePopup} onClose={handleCloseWelcomePopup}/>
       <div className="flex items-center space-x-4">
         <a href="/">
-          <IconLogo className={cn('w-5 h-5')} />
-          <span className="sr-only">Morphic</span>
+          {/* <IconLogo className={cn('w-5 h-5')} /> */}
+          <span className="sr-only">Jarvis</span>
         </a>
       </div>
 
       <div className="flex items-center gap-2">
-        {(ready && authenticated) ? <UserMenu /> : <GuestMenu />}
+        {ready && authenticated ? <UserMenu /> : <GuestMenu login={login} />}
       </div>
     </header>
   )
