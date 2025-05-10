@@ -57,7 +57,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = (market) => {
   // Mock token addresses for demo purposes
   const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
   const DEFAULT_AMOUNT = "1000000000000000000" // 1 ETH in wei
-
+  const DEFAULT_SLIPPAGE = 0.01
   // Example formatted quotes for demo purposes
   const demoEthToToken: FormattedQuote = {
     inputAmount: "1",
@@ -99,7 +99,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = (market) => {
         market,
         WETH_ADDRESS,
         market.pt,
-        DEFAULT_AMOUNT
+        DEFAULT_SLIPPAGE
       )
       
       console.log('Swap executed:', result)
