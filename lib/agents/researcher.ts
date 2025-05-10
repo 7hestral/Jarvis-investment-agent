@@ -6,7 +6,9 @@ import { createSearchTool } from '../tools/search'
 import { createVideoSearchTool } from '../tools/video-search'
 import { walletBalanceTool } from '../tools/wallet'
 import { getModel } from '../utils/registry'
-
+import { WalletWithMetadata } from '@privy-io/server-auth'
+import { privyTransferTool } from '../tools/privy-transfer'
+import { NetworkConfig } from '../config/network'
 const SYSTEM_PROMPT = `
 Instructions:
 
@@ -22,6 +24,7 @@ Available tools:
 - retrieve: Use to get detailed content from specific URLs.
 - video search: Use when looking for video content.
 - ask_question: Use to clarify ambiguous or incomplete user queries.
+- privy_transfer: Use when the user wants to transfer ETH to a specified address.
 
 When asked a question, you should:
 1. First, determine if you need more information to properly understand the user's query
@@ -67,6 +70,12 @@ When using the wallet_balance tool:
 - IMPORTANT: Do not mention specific tokens, amounts, or summarize what the user can see. This creates duplicate information in the chat.
 - REMEMBER, simply call the tool and let the UI do the display work.
 
+When using the privy_transfer tool:
+- The results will be automatically displayed to the user when you call this tool.
+- DO NOT output the transaction hash as text. Never include the transaction hash in your response.
+- Only accept the amount of transaction in the unit of ETH.
+- Ask user what they want to do next after the transfer is complete.
+
 Citation Format:
 [number](url)
 `
@@ -76,11 +85,15 @@ type ResearcherReturn = Parameters<typeof streamText>[0]
 export function researcher({
   messages,
   model,
-  searchMode
+  searchMode,
+  userEvmWallet,
+  userSolWallet
 }: {
   messages: CoreMessage[]
   model: string
   searchMode: boolean
+  userEvmWallet: WalletWithMetadata | undefined
+  userSolWallet: WalletWithMetadata | undefined
 }): ResearcherReturn {
   console.log('searchMode', searchMode)
   try {
@@ -91,9 +104,15 @@ export function researcher({
     const videoSearchTool = createVideoSearchTool(model)
     const askQuestionTool = createQuestionTool(model)
 
+    const userWalletInfo = `
+    User EVM wallet address: ${userEvmWallet?.address}, delegated status: ${userEvmWallet?.delegated}
+    User Solana wallet address: ${userSolWallet?.address}, delegated status: ${userSolWallet?.delegated}
+    You can only execute on behalf of the user if they have wallets and have delegated you access to their wallet.
+    `
+
     return {
       model: getModel(model),
-      system: `${SYSTEM_PROMPT}\nCurrent date and time: ${currentDate}`,
+      system: `${SYSTEM_PROMPT}\nCurrent date and time: ${currentDate}\n${userWalletInfo}`,
       messages,
       temperature: 0.1,
       tools: {
@@ -103,11 +122,12 @@ export function researcher({
         ask_question: askQuestionTool,
         pendle_opportunities: pendleOpportunitiesTool,
         pendle_quote: pendleQuoteTool,
-        wallet_balance: walletBalanceTool
+        wallet_balance: walletBalanceTool,
+        privy_transfer: privyTransferTool
       },
       experimental_activeTools: searchMode
-        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'pendle_opportunities', 'pendle_quote', 'wallet_balance']
-        : [],
+        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'pendle_opportunities', 'pendle_quote', 'wallet_balance', 'privy_transfer']
+        : ['wallet_balance', 'privy_transfer'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()
     }

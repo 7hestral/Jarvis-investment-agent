@@ -1,11 +1,10 @@
 import { Chat } from '@/components/chat'
 import { getChat } from '@/lib/actions/chat'
 import { getModels } from '@/lib/config/models'
-import { privy } from '@/lib/privy/verify-access-token'
+import { privy } from '@/lib/privy/client'
 import { convertToUIMessages } from '@/lib/utils'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
 export const maxDuration = 60
 
 export async function generateMetadata(props: {
@@ -16,7 +15,7 @@ export async function generateMetadata(props: {
   // console.log('All headers:', Object.fromEntries(headersList.entries()))
 
   const authToken = headersList.get('authorization')?.replace(/^Bearer /, '')
-  
+
   let userId = 'anonymous'
   if (authToken) {
     try {
@@ -38,12 +37,15 @@ export default async function SearchPage(props: {
   params: Promise<{ id: string }>
 }) {
   const cookiesList = await cookies()
-  console.log('Privy token from cookies:',  cookiesList.get('privy-token')?.value)
+  console.log(
+    'Privy token from cookies:',
+    cookiesList.get('privy-token')?.value
+  )
   const headersList = await headers()
   // console.log('All headers:', Object.fromEntries(headersList.entries()))
 
   const authToken = headersList.get('authorization')?.replace(/^Bearer /, '')
-  
+
   let userId = 'anonymous'
   if (authToken) {
     try {
@@ -66,7 +68,11 @@ export default async function SearchPage(props: {
     console.log('No chat found')
     redirect('/')
   }
-  console.log("UserId difference in <search />[id]/page.tsx", chat?.userId, userId)
+  console.log(
+    'UserId difference in <search />[id]/page.tsx',
+    chat?.userId,
+    userId
+  )
   if (chat?.userId !== userId && chat?.userId !== 'anonymous') {
     console.log('Chat user ID does not match user ID')
     notFound()

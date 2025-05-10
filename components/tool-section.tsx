@@ -8,7 +8,7 @@ import { SearchSection } from './search-section'
 import { SimpleQuoteDisplay } from './simple-quote-display'
 import { VideoSearchSection } from './video-search-section'
 import { WalletBalanceSection } from './wallet-balance-section'
-
+import { TransferSection } from './transfer-section'
 interface ToolSectionProps {
   tool: ToolInvocation
   isOpen: boolean
@@ -104,6 +104,14 @@ export function ToolSection({
     case 'wallet_balance':
       return (
         <WalletBalanceSection
+          tool={tool}
+          isOpen={isOpen}
+          onOpenChange={onOpenChange}
+        />
+      )
+    case 'privy_transfer':
+      return (
+        <TransferSection
           tool={tool}
           isOpen={isOpen}
           onOpenChange={onOpenChange}

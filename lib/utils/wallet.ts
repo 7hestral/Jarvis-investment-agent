@@ -118,7 +118,6 @@ export async function getWalletBalances(
 ): Promise<WalletBalanceResult> {
   // Use provided wallet address or environment variable
   const walletAddress = walletAddressParam || process.env.WALLET_ADDRESS;
-  
   if (!walletAddress) {
     throw new Error("No wallet address provided and WALLET_ADDRESS environment variable is not set.");
   }
@@ -133,13 +132,13 @@ export async function getWalletBalances(
     // Start with our known tokens
     let tokenAddresses = new Set(KNOWN_TOKENS.map(addr => addr.toLowerCase()));
     
-    // Try to discover additional tokens
-    try {
-      const discoveredTokens = await discoverTokens(walletAddress, provider);
-      discoveredTokens.forEach(addr => tokenAddresses.add(addr));
-    } catch (error) {
-      console.error("Token discovery failed, using only known tokens");
-    }
+    // // Try to discover additional tokens
+    // try {
+    //   const discoveredTokens = await discoverTokens(walletAddress, provider);
+    //   discoveredTokens.forEach(addr => tokenAddresses.add(addr));
+    // } catch (error) {
+    //   console.error("Token discovery failed, using only known tokens");
+    // }
     
     // Get data for all tokens in parallel
     const tokenDataPromises = Array.from(tokenAddresses).map(addr => 

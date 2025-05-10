@@ -1,13 +1,12 @@
-
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 import { SidebarGroup, SidebarGroupLabel } from '@/components/ui/sidebar'
 import { getChatsPage } from '@/lib/actions/chat'
+import { privy } from '@/lib/privy/client'
+import { headers } from 'next/headers'
 import { ChatHistoryClient } from './chat-history-client'
 import { ClearHistoryAction } from './clear-history-action'
-import { privy } from '@/lib/privy/verify-access-token'
-import { headers } from 'next/headers'
 
 export async function ChatHistorySection() {
   const enableSaveChatHistory = process.env.ENABLE_SAVE_CHAT_HISTORY === 'true'
