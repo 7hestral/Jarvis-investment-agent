@@ -46,7 +46,7 @@ export const Header: React.FC = () => {
         //   setShowWelcomePopup(true)
         // }
         // always show welcome popup, for demo purposes
-        setShowWelcomePopup(true)
+        // setShowWelcomePopup(true)
         // if (solWallet?.delegated && solWallet.address) {
         //   delegateWallet({ address: solWallet.address, chainType: 'solana' })
         // }
