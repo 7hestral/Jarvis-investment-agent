@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import {
+  ArrowRightLeft,
   BookCheck,
   Check,
   File,
@@ -61,6 +62,10 @@ export const Section: React.FC<SectionProps> = ({
       break
     case 'Content':
       icon = <File size={iconSize} className={iconClassName} />
+      type = 'badge'
+      break
+    case 'Transaction':
+      icon = <ArrowRightLeft size={iconSize} className={iconClassName} />
       type = 'badge'
       break
     default:

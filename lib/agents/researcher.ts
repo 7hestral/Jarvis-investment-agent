@@ -7,7 +7,7 @@ import { createVideoSearchTool } from '../tools/video-search'
 import { walletBalanceTool } from '../tools/wallet'
 import { getModel } from '../utils/registry'
 import { WalletWithMetadata } from '@privy-io/server-auth'
-
+import { privyTransferTool } from '../tools/privy-transfer'
 const SYSTEM_PROMPT = `
 Instructions:
 
@@ -23,6 +23,7 @@ Available tools:
 - retrieve: Use to get detailed content from specific URLs.
 - video search: Use when looking for video content.
 - ask_question: Use to clarify ambiguous or incomplete user queries.
+- privy_transfer: Use when the user wants to transfer ETH to a specified address.
 
 When asked a question, you should:
 1. First, determine if you need more information to properly understand the user's query
@@ -68,6 +69,10 @@ When using the wallet_balance tool:
 - IMPORTANT: Do not mention specific tokens, amounts, or summarize what the user can see. This creates duplicate information in the chat.
 - REMEMBER, simply call the tool and let the UI do the display work.
 
+When using the privy_transfer tool:
+- You must display the transaction hash to the user, in the form of (View transaction on Sepolia)[https://sepolia.etherscan.io/tx/<transaction_hash>]
+- Only accept the amount of transaction in the unit of ETH.
+
 Citation Format:
 [number](url)
 `
@@ -99,7 +104,7 @@ export function researcher({
     const userWalletInfo = `
     User EVM wallet address: ${userEvmWallet?.address}, delegated status: ${userEvmWallet?.delegated}
     User Solana wallet address: ${userSolWallet?.address}, delegated status: ${userSolWallet?.delegated}
-    You can only execute on behalf of the user if they have delegated you access to their wallet.
+    You can only execute on behalf of the user if they have wallets and have delegated you access to their wallet.
     `
 
     return {
@@ -114,11 +119,12 @@ export function researcher({
         ask_question: askQuestionTool,
         pendle_opportunities: pendleOpportunitiesTool,
         pendle_quote: pendleQuoteTool,
-        wallet_balance: walletBalanceTool
+        wallet_balance: walletBalanceTool,
+        privy_transfer: privyTransferTool
       },
       experimental_activeTools: searchMode
-        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'pendle_opportunities', 'pendle_quote', 'wallet_balance']
-        : [],
+        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'pendle_opportunities', 'pendle_quote', 'wallet_balance', 'privy_transfer']
+        : ['wallet_balance', 'privy_transfer'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()
     }

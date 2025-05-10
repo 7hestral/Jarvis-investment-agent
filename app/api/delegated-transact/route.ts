@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrivyClient, AuthTokenClaims } from "@privy-io/server-auth";
 import { getUserEvmWalletAddress, getUserSolWalletAddress, getUserWallet, privy } from "@/lib/privy/client";
 import { WalletWithMetadata } from "@privy-io/server-auth";
+import { fetchEthUsdPrice } from "@/lib/tools/privy-transfer";
 export async function GET(req: NextRequest) {
 
   const evmWallet: WalletWithMetadata | undefined = await getUserWallet('ethereum');
@@ -14,10 +15,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No evm wallet" }, { status: 401 });
   }
   try {
-    // const {signature, encoding} = await privy.walletApi.ethereum.signMessage({
-    //     walletId: evmWallet?.id || '',
-    //     message: 'Hello world'
-    // });
+    const {signature, encoding} = await privy.walletApi.ethereum.signMessage({
+        walletId: evmWallet?.id || '',
+        message: 'Hello world'
+    });
+    const { price, decimals } = await fetchEthUsdPrice();
+    console.log('Price: ', price, 'Decimals: ', decimals);
 
     const { hash } = await privy.walletApi.ethereum.sendTransaction({
         walletId: evmWallet?.id || '',
