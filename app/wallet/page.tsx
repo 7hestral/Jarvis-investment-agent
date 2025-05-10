@@ -1,10 +1,14 @@
 "use client";
 
 import { WalletBalance } from '@/components/wallet-balance';
-
+import { useWalletAddresses } from '@/lib/hooks/use-evm-and-sol-addresses';
+import { usePrivy } from '@privy-io/react-auth'
 export default function WalletPage() {
   // Sample wallet address (from the script)
-  const primaryWallet = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+  const { ready, authenticated, user } = usePrivy()
+  const { evmAddress, solAddress } = useWalletAddresses(ready, authenticated, user)
+  // const primaryWallet = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+
 
   return (
     <div className="container mx-auto py-12">
@@ -17,7 +21,7 @@ export default function WalletPage() {
         </div>
         
         <div className="flex justify-center">
-          <WalletBalance walletAddress={primaryWallet} className="w-full" />
+          <WalletBalance walletAddress={evmAddress} className="w-full" />
         </div>
       </div>
     </div>
