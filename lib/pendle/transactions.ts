@@ -117,8 +117,9 @@ export async function executeSwapTransaction(
     //   throw new Error('PRIVATE_KEY environment variable is not set.')
     // }
     console.log('Sending transaction...')
-
+    console.log('txData', txData)
     const to = txData.to
+    const from = txData.from
 
     const data = txData.data
     const chainId = 1
@@ -138,12 +139,18 @@ export async function executeSwapTransaction(
     const toAddress = (to as string).replace(/^0x/, '')
     const valueHex = quantity.replace(/^0x/, '')
     const dataHex = (data as string).replace(/^0x/, '')
+    const fromAddress = (from as string).replace(/^0x/, '')
+    console.log('toAddress', toAddress)
+    console.log('fromAddress', fromAddress)
+    console.log('valueHex', valueHex)
+    console.log('dataHex', dataHex)
 
     const { hash } = await privy.walletApi.ethereum.sendTransaction({
       walletId: evmWallet!.id,
       caip2: `eip155:1`,
       transaction: {
         to: `0x${toAddress}` as `0x${string}`,
+        from: `0x${fromAddress}` as `0x${string}`,
         chainId: chainId,
         value: `0x${valueHex}` as `0x${string}`,
         data: `0x${dataHex}` as `0x${string}`
