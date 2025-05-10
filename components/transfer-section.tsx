@@ -37,7 +37,7 @@ export function TransferSection({
 
   switch (tool.state) {
     case 'call':
-      statusDisplay = <p>Transfer in progress...</p>
+      statusDisplay = <p>Transaction in progress...</p>
       break
     case 'result':
       const toolResult = tool.result as PrivyTransferResult
@@ -45,7 +45,7 @@ export function TransferSection({
       if (toolResult.status === 'success' || toolResult.hash) {
         statusDisplay = (
           <div>
-            <p className="text-black-600">Transfer successful!</p>
+            <p className="text-black-600">Transaction completed!</p>
             {toolResult.hash && (
               <p>
                 View on {' '}
