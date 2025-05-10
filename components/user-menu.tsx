@@ -17,7 +17,7 @@ import { useRouter } from 'next/navigation'
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'
 import { Button } from './ui/button'
-
+import { WalletMenuItems } from './wallet-menu-items'
 
 
 export default function UserMenu() {
@@ -68,10 +68,19 @@ export default function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/wallet')}>
+        {/* <DropdownMenuItem onClick={() => router.push('/wallet')}>
           <Wallet className="mr-2 h-4 w-4" />
           <span>Wallet</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Wallet className="mr-2 h-4 w-4" />
+            <span>Wallet</span>
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            <WalletMenuItems />
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
             <Palette className="mr-2 h-4 w-4" />

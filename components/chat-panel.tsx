@@ -8,16 +8,19 @@ import { ArrowUp, ChevronDown, MessageCirclePlus, Square } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import Textarea from 'react-textarea-autosize'
+import { useWalletAddresses } from '../lib/hooks/use-evm-and-sol-addresses'
 import { useArtifact } from './artifact/artifact-context'
 import { CopyableWalletAddress } from './copyable-wallet-address'
+import { CopyableWalletAddressSkeleton } from './copyable-wallet-address-skeleton'
 import { EmptyScreen } from './empty-screen'
 import { ModelSelector } from './model-selector'
 import { SearchModeToggle } from './search-mode-toggle'
 import { Button } from './ui/button'
 import { IconLogo } from './ui/icons'
 import { WelcomeMessage } from './welcome-messages'
-import { CopyableWalletAddressSkeleton } from './copyable-wallet-address-skeleton'
-import { useWalletAddresses } from './useEvmAndSolAddresses'
+import { WalletWithMetadata, useHeadlessDelegatedActions, useWallets, useSolanaWallets } from '@privy-io/react-auth'
+import { toast } from 'sonner'
+
 interface ChatPanelProps {
   input: string
   handleInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -53,11 +56,17 @@ export function ChatPanel({
   const [isComposing, setIsComposing] = useState(false) // Composition state
   const [enterDisabled, setEnterDisabled] = useState(false) // Disable Enter after composition ends
   const { ready, authenticated, user } = usePrivy()
-  const { evmAddress, solAddress } = useWalletAddresses(ready, authenticated, user)
+  const { evmAddress, solAddress } = useWalletAddresses(
+    ready,
+    authenticated,
+    user
+  )
+  const { wallets: evmWallets, ready: evmReady } = useWallets()
+  const { wallets: solanaWallets, ready: solanaReady } = useSolanaWallets()
   const [isNewUser, setIsNewUser] = useState(false)
-  const [walletAddress, setWalletAddress] = useState('')
+  const [ walletAddress, setWalletAddress ] = useState('')
   const { close: closeArtifact } = useArtifact()
-
+  const { delegateWallet } = useHeadlessDelegatedActions()
   // Generate a deterministic seed for welcome message based on date
   // This will change each day but remain consistent throughout the day
   const welcomeSeed = useRef(new Date().getDate()).current
@@ -120,8 +129,51 @@ export function ChatPanel({
       const isFirstLogin = now.getTime() - created.getTime() < 60_000
       setIsNewUser(isFirstLogin)
       setWalletAddress(user.wallet?.address || '')
+
+
     }
   }, [ready, authenticated, user])
+
+  useEffect(() => {
+    if (!ready) return
+    if (!authenticated) return
+    if (!user) return
+    if (!evmReady) return
+    if (!solanaReady) return
+    const created = new Date(user!.createdAt)
+    const now = new Date()
+
+    // e.g. consider "first login" if created < 2 minute ago
+    const isFirstLogin = now.getTime() - created.getTime() < 600_000
+    // always delegate, for demo purposes
+    if (evmReady && solanaReady) {
+      const evmWallet = user.linkedAccounts.find((wallet) => {
+        if (wallet.type == 'wallet') {
+          return wallet.walletClientType === 'privy' && wallet.chainType === 'ethereum' && wallet.connectorType === 'embedded'
+        }
+      }) as WalletWithMetadata | undefined;
+      console.log("evmReady", evmReady)
+      console.log(evmWallets)
+      console.log('evmWallet in chat panel', evmWallet)
+
+      const solWallet = solanaWallets.find(
+        wallet => wallet.walletClientType === 'privy'
+      ) as WalletWithMetadata | undefined
+
+      if (evmWallet?.address && !evmWallet.delegated) {
+
+        console.log('evmWallet delegated')
+        delegateWallet({ address: evmWallet.address, chainType: 'ethereum' })
+        toast.success('EVM wallet delegated')
+      }
+      if (solWallet?.address && !solWallet.delegated) {
+        console.log('solWallet delegated')
+        delegateWallet({ address: solWallet.address, chainType: 'solana' })
+        toast.success('Solana wallet delegated')
+      }
+    }
+  }, [evmReady, solanaReady, authenticated, ready])
+
 
   // Add scroll to bottom handler
   const handleScrollToBottom = () => {
@@ -144,21 +196,14 @@ export function ChatPanel({
       {messages.length === 0 && (
         <div className="mb-10 flex flex-col items-center gap-4">
           <IconLogo className="size-12 text-muted-foreground" />
-          {
-            !ready && (
-              <div>
-              <CopyableWalletAddressSkeleton
-                className="justify-center"
-              />
-              <CopyableWalletAddressSkeleton
-                className="justify-center"
-              />
-              </div>
-            )
-          }
-          {
-            ready && !authenticated && (
-              <div>
+          {!ready && (
+            <div>
+              <CopyableWalletAddressSkeleton className="justify-center" />
+              <CopyableWalletAddressSkeleton className="justify-center" />
+            </div>
+          )}
+          {ready && !authenticated && (
+            <div>
               <CopyableWalletAddress
                 walletAddress=""
                 className="justify-center"
@@ -169,36 +214,35 @@ export function ChatPanel({
                 className="justify-center"
                 walletAddressNotAvailableText="We will create/retrieve your wallets"
               />
-              </div>
-            )
-          }
+            </div>
+          )}
           {evmAddress && solAddress && isNewUser && (
             <div>
-            <CopyableWalletAddress
-              walletAddress={evmAddress}
-              className="justify-center"
-              walletAddressIntroText="🎉 Congrats! Your wallet has been successfully created. EVM wallet address:"
-            />
-            <CopyableWalletAddress
-              walletAddress={solAddress}
-              className="justify-center"
-              walletAddressIntroText="Your Solana wallet address:"
-            />
+              <CopyableWalletAddress
+                walletAddress={evmAddress}
+                className="justify-center"
+                walletAddressIntroText="🎉 Congrats! Your wallets have been successfully created. EVM wallet address:"
+              />
+              <CopyableWalletAddress
+                walletAddress={solAddress}
+                className="justify-center"
+                walletAddressIntroText="Your Solana wallet address:"
+              />
             </div>
           )}
           {evmAddress && solAddress && !isNewUser && (
             <div>
-            <CopyableWalletAddress
-              walletAddress={evmAddress}
-              className="justify-center"
-              walletAddressIntroText="Your EVM wallet address:"
-            />
-            <CopyableWalletAddress
-            walletAddress={solAddress}
-            className="justify-center"
-            walletAddressIntroText="Your Solana wallet address:"
-          />
-          </div>
+              <CopyableWalletAddress
+                walletAddress={evmAddress}
+                className="justify-center"
+                walletAddressIntroText="Your EVM wallet address:"
+              />
+              <CopyableWalletAddress
+                walletAddress={solAddress}
+                className="justify-center"
+                walletAddressIntroText="Your Solana wallet address:"
+              />
+            </div>
           )}
           <WelcomeMessage seed={welcomeSeed} />
         </div>

@@ -11,78 +11,23 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import type { LinkedAccountWithMetadata, User } from '@privy-io/react-auth'
-import { getAccessToken, useLogin, usePrivy, useFundWallet } from '@privy-io/react-auth'
-import {
-  Link2,
-  LogIn,
-  Palette,
-  Settings2
-} from 'lucide-react'
+import { usePrivy } from '@privy-io/react-auth'
+import { Link2, LogIn, Palette, Settings2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { ExternalLinkItems } from './external-link-items'
 import { ThemeMenuItems } from './theme-menu-items'
-import { getWalletAddresses } from './useEvmAndSolAddresses'
-import { sepolia } from 'viem/chains'
-import { useFundWallet as useSolanaFundWallet } from '@privy-io/react-auth/solana';
 
+// Define props for GuestMenu
+interface GuestMenuProps {
+  login: () => void // Or a more specific type if available from useLogin return
+}
 
-export default function GuestMenu() {
+export default function GuestMenu({ login }: GuestMenuProps) {
+  // Destructure login from props
   const router = useRouter()
   const { ready, authenticated } = usePrivy()
-  const { fundWallet } = useFundWallet()
-  const { fundWallet: fundSolanaWallet } = useSolanaFundWallet()
 
-  const { login } = useLogin({
-    onError: async (error) => {
-      console.error('Error during login:', error)
-    },
-    onComplete: async (params: {
-      user: User
-      isNewUser: boolean
-      wasAlreadyAuthenticated: boolean
-      loginMethod: any | null
-      loginAccount: LinkedAccountWithMetadata | null
-    }) => {
-      try {
-        const { user, isNewUser } = params
-
-        // const { evmAddress, solAddress } = getWalletAddresses(user)
-        // console.log("first login", isNewUser)
-        // console.log("user in guest menu", user)
-        // const token = await getAccessToken()
-        // if (!token) {
-        //   throw new Error('No access token available')
-        // }
-        // document.cookie = `privy-token=${token}; path=/; max-age=2592000; SameSite=Lax`
-        // console.log("setting cookie")
-        // console.log(params)
-        // // await router.push('/')
-        // // router.refresh()
-        // if (!isNewUser) {
-        //   await fundWallet(evmAddress, {
-        //     chain: sepolia,
-        //     asset: 'native-currency'
-        //   })
-        //   await fundSolanaWallet(solAddress, {
-        //     cluster: {name: 'devnet'}
-        //   }
-        // )
-        // }
-
-      } catch (error) {
-        console.error('Error during login:', error)
-      }
-    }
-  })
-
-  // const handleLogin = async () => {
-  //   await login()
-  //   // console.log('login complete, redirecting to /')
-  //   // await router.push('/')
-  //   await router.refresh()
-  // }
 
   useEffect(() => {
     console.log('ready', ready)
@@ -105,7 +50,7 @@ export default function GuestMenu() {
         <DropdownMenuItem asChild={false}>
           <button
             type="button"
-            onClick={login}
+            onClick={login} // Use login from props
             className="flex items-center w-full px-2 py-1.5 text-sm cursor-pointer hover:bg-accent focus:bg-accent focus:outline-none"
           >
             <LogIn className="mr-2 h-4 w-4" />
