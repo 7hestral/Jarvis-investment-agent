@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { ethers } from 'ethers'
 import { SimplifiedPendleMarket } from '../types/pendle'
 
 // Types for transaction responses
@@ -44,6 +43,7 @@ const BASE_URL = 'https://api-v2.pendle.finance/core/v1'
 /**
  * Get transaction data for swapping tokens with Pendle
  * @param marketAddress The market address 
+ * @param tokenIn Address of the input token
  * @param tokenOut Address of the output token
  * @param amountIn Amount of input token in wei
  * @param slippage Slippage tolerance (e.g., 0.01 for 1%)
@@ -51,13 +51,14 @@ const BASE_URL = 'https://api-v2.pendle.finance/core/v1'
  */
 export async function getSwapTransaction(
   marketAddress: string,
+  tokenIn: string,
   tokenOut: string,
   amountIn: string,
   slippage: number = 0.01
 ): Promise<any> {
   try {
-    // ETH is always used as the input token
-    const actualTokenIn = ETH_ADDRESS;
+    // For ETH input, use WETH as tokenIn for API compatibility
+    const actualTokenIn = tokenIn === ETH_ADDRESS ? WETH_ADDRESS : tokenIn;
     
     console.log(`Using market: ${marketAddress}`);
     console.log(`Swapping from ${actualTokenIn} to ${tokenOut}`);
@@ -67,13 +68,9 @@ export async function getSwapTransaction(
       throw new Error("WALLET_ADDRESS environment variable is not set.");
     }
     const RECEIVER = process.env.WALLET_ADDRESS;
-    const chainId = 1;
-
-    console.log(`Wallet address: ${RECEIVER}`);
-    console.log(`Slippage: ${slippage}`);
-
+    
     // Use v2 API for swap
-    const url = `${BASE_URL}/sdk/${chainId}/markets/${marketAddress}/swap`;
+    const url = `${BASE_URL}/sdk/1/markets/${marketAddress}/swap`;
     
     console.log("API URL:", url);
     console.log("Payload:", {
@@ -88,9 +85,9 @@ export async function getSwapTransaction(
     const response = await axios.get(url, {
       params: {
         tokenIn: actualTokenIn,
-        tokenOut: tokenOut,
-        amountIn: amountIn,
-        slippage: slippage,
+        tokenOut,
+        amountIn,
+        slippage,
         receiver: RECEIVER,
         enableAggregator: true
       }
@@ -118,6 +115,7 @@ export async function getSwapTransaction(
 /**
  * Executes a swap transaction
  * @param market The market to swap with
+ * @param tokenIn Address of the input token
  * @param tokenOut Address of the output token
  * @param amountIn Amount of input token
  * @param slippage Slippage tolerance (e.g., 0.01 for 1%)
@@ -125,6 +123,7 @@ export async function getSwapTransaction(
  */
 export async function swap(
   market: SimplifiedPendleMarket,
+  tokenIn: string,
   tokenOut: string,
   amountIn: string,
   slippage: number = 0.01
@@ -135,6 +134,7 @@ export async function swap(
     // Get the transaction data from the Pendle API
     const txData = await getSwapTransaction(
       market.address,
+      tokenIn,
       tokenOut,
       amountIn,
       slippage
@@ -235,67 +235,4 @@ export async function redeem(
     status: 'pending',
     tokensReceived: '0'
   }
-}
-
-/**
- * Executes a transaction with the given transaction data
- * @param txData Transaction data to execute
- * @returns Promise with transaction hash
- */
-export async function executeSwapTransaction(txData: any): Promise<{ hash: string }> {
-  try {
-    // Verify environment variables are set
-    if (!process.env.PRIVATE_KEY) {
-      throw new Error("PRIVATE_KEY environment variable is not set.");
-    }
-    console.log("PRIVATE_KEY:", process.env.PRIVATE_KEY);
-    
-    const provider = new ethers.JsonRpcProvider("http://localhost:8545");
-    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-    
-    console.log("Sending transaction...");
-    const tx = await wallet.sendTransaction(txData);
-    console.log("Transaction sent. Hash:", tx.hash);
-    
-    // Wait for transaction to be confirmed
-    await tx.wait();
-    console.log("Transaction confirmed.");
-    
-    return {
-      hash: tx.hash,
-    };
-  } catch (error: any) {
-    console.error("Error executing transaction:", error.message);
-    throw new Error(`Failed to execute transaction: ${error.message}`);
-  }
-}
-
-/**
- * Get transaction data for swapping ETH to a specific token
- * @param marketAddress The market address
- * @param tokenOutAddress Address of the output token
- * @param amountIn Amount of ETH in wei
- * @param slippage Slippage tolerance (e.g., 0.01 for 1%)
- * @returns Promise with transaction result
- */
-export async function getSwapEthToTokenTransaction(
-  marketAddress: string,
-  tokenOutAddress: string,
-  amountIn: string,
-  slippage: number = 0.01
-): Promise<any> {
-  try {
-    // Get the transaction data - ETH is hardcoded as input token in getSwapTransaction
-    const txData = await getSwapTransaction(
-      marketAddress,
-      tokenOutAddress,
-      amountIn,
-      slippage
-    );
-    
-    return txData;
-  } catch (error: any) {
-    console.error("Error getting swap transaction data:", error.message);
-    throw new Error(`Failed to get swap transaction data: ${error.message}`);
-  }
-}
+} 

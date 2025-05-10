@@ -1,5 +1,5 @@
 import { CoreMessage, smoothStream, streamText } from 'ai'
-import { pendleOpportunitiesTool, pendleQuoteTool, pendleSwapTool } from '../tools/pendle'
+import { pendleOpportunitiesTool, pendleQuoteTool } from '../tools/pendle'
 import { createQuestionTool } from '../tools/question'
 import { retrieveTool } from '../tools/retrieve'
 import { createSearchTool } from '../tools/search'
@@ -19,7 +19,6 @@ IMPORTANT: When the user has search mode enabled, you MUST use the most appropri
 Available tools:
 - pendle_opportunities: Use when the user asks about Pendle yield opportunities, DeFi yields, or APY/yield farming on Ethereum. This tool returns a list of current Pendle opportunities with APY and liquidity information.
 - pendle_quote: Use when the user wants to know the conversion rate between ETH and a specific Pendle market token (PT or YT). This requires market address and token out address parameters.
-- pendle_swap: Use when the user wants to execute a swap transaction from ETH to a Pendle token (PT or YT). This requires market address, token out address, and ETH amount parameters.
 - wallet_balance: Use when the user asks about their wallet balance, token holdings, or specific token balance. This tool returns the user's cryptocurrency balances.
 - search: Use for general web search queries. ONLY USE IF YOU ARE UNAWARE OF THE INFORMATION OR THE OTHER TOOLS ARE NOT APPROPRIATE.
 - retrieve: Use to get detailed content from specific URLs.
@@ -61,14 +60,6 @@ When using the pendle_quote tool:
 - Instead, acknowledge the query with a simple response like: "Here's the current quote for converting ETH to the requested Pendle token."
 - REMEMBER, simply call the tool and let the UI do the display work.
 - If the user hasn't specified which market they want a quote for, first suggest they view the available markets with the pendle_opportunities tool.
-
-When using the pendle_swap tool:
-- This tool will execute a real swap transaction, converting ETH to the specified Pendle token.
-- Before using this tool, confirm the user's intent to execute a swap transaction.
-- If the user hasn't seen market opportunities or gotten a quote yet, suggest they use pendle_opportunities or pendle_quote first.
-- After the swap is executed, simply acknowledge the transaction completion and display the transaction hash.
-- The transaction results will be automatically displayed to the user when you call this tool.
-- DO NOT repeat transaction details in your text - the UI will show these details.
 
 When using the wallet_balance tool:
 - The results will be automatically displayed to the user when you call this tool.
@@ -131,13 +122,12 @@ export function researcher({
         ask_question: askQuestionTool,
         pendle_opportunities: pendleOpportunitiesTool,
         pendle_quote: pendleQuoteTool,
-        pendle_swap: pendleSwapTool,
         wallet_balance: walletBalanceTool,
         privy_transfer: privyTransferTool
       },
       experimental_activeTools: searchMode
-        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'pendle_opportunities', 'pendle_quote', 'pendle_swap', 'wallet_balance' 'privy_transfer']
-        : ['wallet_balance', 'privy_transfer','pendle_opportunities', 'pendle_quote', 'pendle_swap'],
+        ? ['search', 'retrieve', 'videoSearch', 'ask_question', 'pendle_opportunities', 'pendle_quote', 'wallet_balance', 'privy_transfer']
+        : ['wallet_balance', 'privy_transfer'],
       maxSteps: searchMode ? 5 : 1,
       experimental_transform: smoothStream()
     }
